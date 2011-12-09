@@ -91,5 +91,4 @@ jPile is released on the MIT license which is available in `license.txt` to read
 
 There is a chart is at http://cloud.github.com/downloads/opower/jpile/performance-graph.jpg. 
 
-![test](/opower/jpile/blob/master/documentation/performance-graph.jpg)
 
