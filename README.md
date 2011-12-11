@@ -49,7 +49,7 @@ jPile is very easy to use. If you are using Maven, then add the following depend
 
 ```
 <dependency>
-    <groupId>com.opower.persistence</groupId>
+    <groupId>com.opower</groupId>
     <artifactId>jpile</artifactId>
     <version>1.0-SNAPSHOT</version>
 </dependency>
