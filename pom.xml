@@ -30,8 +30,8 @@
 
     <scm>
         <url>git@github.com:opower/jpile.git</url>
-        <connection>scm:git@github.com:opower/jpile.git</connection>
-        <developerConnection>scm:git@github.com:opower/jpile.git</developerConnection>
+        <connection>scm:git:git@github.com:opower/jpile.git</connection>
+        <developerConnection>scm:git:git@github.com:opower/jpile.git</developerConnection>
     </scm>
 
     <developers>
