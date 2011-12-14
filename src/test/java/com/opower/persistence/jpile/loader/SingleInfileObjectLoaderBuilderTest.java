@@ -16,11 +16,16 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import static junit.framework.Assert.*;
-import static org.mockito.Mockito.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
 
 
 /**
+ * Tests the builder for Single Infile Object Loader
+ *
  * @author amir.raminfar
  */
 @RunWith(MockitoJUnitRunner.class)

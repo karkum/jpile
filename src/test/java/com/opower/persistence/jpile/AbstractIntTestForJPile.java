@@ -13,6 +13,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
+ * Abstract test case for all int tests. Loads MySQL drivers and creates a new MySQL {@link Connection}
+ *
  * @author amir.raminfar
  */
 @RunWith(SpringJUnit4ClassRunner.class)

@@ -8,6 +8,7 @@ import org.springframework.context.annotation.ImportResource;
 
 /**
  * Java Config class that is used to inject {@link PersistenceAnnotationInspector} in application
+ *
  * @author amir.raminfar
  */
 @Configuration

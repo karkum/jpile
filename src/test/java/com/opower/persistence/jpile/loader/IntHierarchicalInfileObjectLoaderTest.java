@@ -9,9 +9,11 @@ import com.opower.persistence.jpile.sample.ObjectFactory;
 import com.opower.persistence.jpile.sample.Product;
 import org.junit.Test;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
 
 /**
+ * Tests object loader for correctness
+ *
  * @author amir.raminfar
  */
 public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPile {

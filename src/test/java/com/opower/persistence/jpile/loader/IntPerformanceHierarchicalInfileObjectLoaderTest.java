@@ -22,6 +22,9 @@ import org.springframework.test.annotation.IfProfileValue;
 import static junit.framework.Assert.assertEquals;
 
 /**
+ * Tests the performance of MySQL with prepared statements and Hibernate. This test is disabled by default because it
+ * takes a while to run.
+ *
  * @author amir.raminfar
  */
 @IfProfileValue(name = "performance", value = "true")
@@ -125,7 +128,7 @@ public class IntPerformanceHierarchicalInfileObjectLoaderTest extends AbstractIn
         doWithInTimedBlock(new Runnable() {
             @Override
             public void run() {
-                hierarchicalInfileObjectLoader.persist(customers[0], (Object[])customers);
+                hierarchicalInfileObjectLoader.persist(customers[0], (Object[]) customers);
                 hierarchicalInfileObjectLoader.flush();
             }
         }, "jPile");

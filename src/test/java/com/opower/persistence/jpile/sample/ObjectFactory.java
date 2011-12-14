@@ -5,9 +5,15 @@ import java.util.Date;
 import com.google.common.collect.ImmutableList;
 
 /**
+ * Creates objects for testing
+ *
  * @author amir.raminfar
  */
-public class ObjectFactory {
+public final class ObjectFactory {
+
+    private ObjectFactory() {
+    }
+
     public static Customer newCustomer() {
         Customer customer = new Customer();
         customer.setContact(newContact());

@@ -324,39 +324,21 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
         this.eventCallback = eventCallback;
     }
 
-    void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
-    Map<Class<?>, Set<Method>> getChildDependent() {
-        return childDependent;
-    }
-
-    Map<Class<?>, Set<Method>> getParentDependent() {
-        return parentDependent;
-    }
-
-    Map<Class<?>, SingleInfileObjectLoader<Object>> getPrimaryObjectLoaders() {
-        return primaryObjectLoaders;
-    }
-
-    Map<Class<?>, SingleInfileObjectLoader<Object>> getSecondaryTableObjectLoaders() {
-        return secondaryTableObjectLoaders;
-    }
-
     /**
      * An event interface that can be used to do perform actions before and after persisting objects
      */
     public interface CallBack {
         /**
          * Gets called before saving an object
+         *
          * @param o the object
          */
         void onBeforeSave(Object o);
 
         /**
          * Gets called after the object has been saved
-         * @param o the object 
+         *
+         * @param o the object
          */
         void onAfterSave(Object o);
     }

@@ -14,6 +14,8 @@ import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
 /**
+ * A sample pojo object for testing
+ *
  * @author amir.raminfar
  */
 @Entity

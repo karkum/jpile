@@ -13,6 +13,8 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
 /**
+ * A sample pojo object for testing
+ *
  * @author amir.raminfar
  */
 @Entity

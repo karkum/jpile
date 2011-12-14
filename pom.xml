@@ -78,6 +78,7 @@
                             <configLocation>checkstyle.xml</configLocation>
                             <failsOnError>true</failsOnError>
                             <consoleOutput>true</consoleOutput>
+                            <includeTestSourceDirectory>true</includeTestSourceDirectory>
                         </configuration>
                         <id>checkstyle</id>
                         <phase>compile</phase>

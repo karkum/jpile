@@ -13,10 +13,15 @@ import com.opower.persistence.jpile.sample.Customer;
 import com.opower.persistence.jpile.sample.Product;
 import org.junit.Test;
 
-import static com.google.common.collect.ImmutableList.*;
-import static org.junit.Assert.*;
+import static com.google.common.collect.ImmutableList.copyOf;
+import static junit.framework.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
+ * Tests all caching logic for correctness
+ *
  * @author amir.raminfar
  */
 public class CacheablePersistenceAnnotationInspectorTest {
@@ -34,10 +39,10 @@ public class CacheablePersistenceAnnotationInspectorTest {
         assertEquals("product", persistenceAnnotationInspector.tableName(Product.class));
     }
 
-    /*@Test
+    @Test
     public void testSecondaryTable() throws Exception {
-        assertEquals("site_location", persistenceAnnotationInspector.secondaryTable(Site.class));
-    }*/
+        assertNull(persistenceAnnotationInspector.secondaryTable(Customer.class));
+    }
 
     @Test
     public void testIdGetter() throws Exception {

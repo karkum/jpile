@@ -12,6 +12,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
+ * A sample pojo object for testing
+ *
  * @author amir.raminfar
  */
 @Entity
