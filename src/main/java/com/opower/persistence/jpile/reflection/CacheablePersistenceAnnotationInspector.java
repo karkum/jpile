@@ -18,8 +18,9 @@ import com.googlecode.ehcache.annotations.Cacheable;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ReflectionUtils;
 
-import static com.google.common.collect.ImmutableList.*;
-import static com.google.common.collect.Lists.*;
+import static com.google.common.collect.ImmutableList.copyOf;
+import static com.google.common.collect.ImmutableList.of;
+import static com.google.common.collect.Lists.newArrayList;
 
 /**
  * The default implementation which parses the annotations. You should not create an instance of this. It should

@@ -16,7 +16,7 @@ import com.opower.persistence.jpile.infile.InfileDataBuffer;
 import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import static java.lang.String.*;
+import static java.lang.String.format;
 
 
 /**

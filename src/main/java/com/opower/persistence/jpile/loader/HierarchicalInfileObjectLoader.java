@@ -29,11 +29,13 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
-import static com.google.common.base.Throwables.*;
-import static com.google.common.collect.ImmutableList.*;
-import static com.google.common.collect.Iterables.*;
-import static com.google.common.collect.Maps.*;
-import static com.google.common.collect.Sets.*;
+import static com.google.common.base.Throwables.propagate;
+import static com.google.common.collect.ImmutableList.copyOf;
+import static com.google.common.collect.ImmutableList.of;
+import static com.google.common.collect.Iterables.concat;
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Maps.newLinkedHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 
 /**
  * Save any type of data using a collection of SingleInfileObjectLoaders. A common use case would be to do something like
@@ -51,7 +53,6 @@ import static com.google.common.collect.Sets.*;
  * </pre>
  * Note that because the connection is passed in, it is up to the caller to close the connection correctly. Otherwise the
  * connection will never be closed.
- *
  *
  * @author amir.raminfar
  * @since 1.0
@@ -343,9 +344,20 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
         return secondaryTableObjectLoaders;
     }
 
+    /**
+     * An event interface that can be used to do perform actions before and after persisting objects
+     */
     public interface CallBack {
+        /**
+         * Gets called before saving an object
+         * @param o the object
+         */
         void onBeforeSave(Object o);
 
+        /**
+         * Gets called after the object has been saved
+         * @param o the object 
+         */
         void onAfterSave(Object o);
     }
 }

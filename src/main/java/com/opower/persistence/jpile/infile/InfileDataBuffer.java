@@ -49,7 +49,7 @@ public class InfileDataBuffer implements InfileRow {
 
     // Infile constants
     protected static final String MYSQL_NULL_STRING = "\\N";
-    protected static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd");
+    protected static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd");
 
     // Utilities
     private final CharsetEncoder encoder;
@@ -194,7 +194,7 @@ public class InfileDataBuffer implements InfileRow {
      */
     @Override
     public final InfileRow append(Date d) {
-        return (d == null) ? this.appendNull() : this.append(dateTimeFormatter.print(new DateTime(d.getTime())));
+        return (d == null) ? this.appendNull() : this.append(DATE_TIME_FORMATTER.print(new DateTime(d.getTime())));
     }
 
     /**
