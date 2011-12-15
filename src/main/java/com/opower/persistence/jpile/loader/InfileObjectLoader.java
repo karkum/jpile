@@ -1,13 +1,14 @@
 package com.opower.persistence.jpile.loader;
 
 import java.io.Flushable;
+import java.sql.Connection;
 import java.util.Collections;
 import java.util.List;
 import com.google.common.base.Preconditions;
 import com.opower.persistence.jpile.infile.InfileDataBuffer;
 import com.opower.persistence.jpile.infile.InfileRow;
 import com.opower.persistence.jpile.infile.InfileStatementCallback;
-import org.springframework.jdbc.core.JdbcTemplate;
+import com.opower.persistence.jpile.infile.JdbcUtil;
 
 /**
  * This class provides a convenient pattern for loading POJOs in batch to MySQL via tha 'LOAD DATA INFILE' protocol.
@@ -29,7 +30,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 public abstract class InfileObjectLoader<E> implements Flushable {
 
-    protected JdbcTemplate jdbcTemplate;
+    protected Connection connection;
     protected String loadInfileSql;
     protected InfileDataBuffer infileDataBuffer;
 
@@ -40,12 +41,12 @@ public abstract class InfileObjectLoader<E> implements Flushable {
     /**
      * Creates a loader with a template for executing JDBC call, an infile SQL statement, and a data buffer.
      *
-     * @param jdbcTemplate     to provide access to JDBC operations
+     * @param connection       to provide access to JDBC operations
      * @param loadInfileSql    to execute
      * @param infileDataBuffer containing binary row data
      */
-    public InfileObjectLoader(JdbcTemplate jdbcTemplate, String loadInfileSql, InfileDataBuffer infileDataBuffer) {
-        this.jdbcTemplate = jdbcTemplate;
+    public InfileObjectLoader(Connection connection, String loadInfileSql, InfileDataBuffer infileDataBuffer) {
+        this.connection = connection;
         this.loadInfileSql = loadInfileSql;
         this.infileDataBuffer = infileDataBuffer;
         this.infileDataBuffer.reset();
@@ -90,9 +91,10 @@ public abstract class InfileObjectLoader<E> implements Flushable {
      */
     @Override
     public void flush() {
-        this.warnings = this.jdbcTemplate.execute(
-                new InfileStatementCallback(this.loadInfileSql, this.infileDataBuffer.asInputStream())
+        JdbcUtil.StatementCallback<List<Exception>> statementCallback = new InfileStatementCallback(
+                this.loadInfileSql, this.infileDataBuffer.asInputStream()
         );
+        this.warnings = JdbcUtil.execute(connection, statementCallback);
         this.infileDataBuffer.clear();
     }
 

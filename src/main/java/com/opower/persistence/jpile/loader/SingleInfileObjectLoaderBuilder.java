@@ -1,6 +1,7 @@
 package com.opower.persistence.jpile.loader;
 
 import java.lang.reflect.Method;
+import java.sql.Connection;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.GeneratedValue;
@@ -14,7 +15,6 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.opower.persistence.jpile.infile.InfileDataBuffer;
 import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import static java.lang.String.format;
 
@@ -28,7 +28,7 @@ import static java.lang.String.format;
  */
 public class SingleInfileObjectLoaderBuilder<E> {
     private Class<E> aClass;
-    private JdbcTemplate jdbcTemplate;
+    private Connection connection;
     private InfileDataBuffer infileDataBuffer;
     private PersistenceAnnotationInspector persistenceAnnotationInspector;
     private String tableName;
@@ -48,8 +48,8 @@ public class SingleInfileObjectLoaderBuilder<E> {
         return this;
     }
 
-    public SingleInfileObjectLoaderBuilder<E> withJdbcTemplate(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public SingleInfileObjectLoaderBuilder<E> withJdbcConnection(Connection connection) {
+        this.connection = connection;
         return this;
     }
 
@@ -97,12 +97,12 @@ public class SingleInfileObjectLoaderBuilder<E> {
      * @return a new instance of object loader
      */
     public SingleInfileObjectLoader<E> build() {
-        Preconditions.checkNotNull(jdbcTemplate, "jdbcTemplate cannot be null");
+        Preconditions.checkNotNull(connection, "connection cannot be null");
         Preconditions.checkNotNull(persistenceAnnotationInspector, "persistenceAnnotationInspector cannot be null");
         Preconditions.checkNotNull(infileDataBuffer, "infileDataBuffer cannot be null");
 
         SingleInfileObjectLoader<E> objectLoader = new SingleInfileObjectLoader<E>(aClass);
-        objectLoader.jdbcTemplate = jdbcTemplate;
+        objectLoader.connection = connection;
         objectLoader.infileDataBuffer = infileDataBuffer;
         objectLoader.persistenceAnnotationInspector = persistenceAnnotationInspector;
         objectLoader.allowNull = allowNull;
@@ -164,7 +164,7 @@ public class SingleInfileObjectLoaderBuilder<E> {
                         = new SingleInfileObjectLoaderBuilder<Object>((Class<Object>) method.getReturnType())
                         .withBuffer(infileDataBuffer)
                         .withDefaultTableName()
-                        .withJdbcTemplate(jdbcTemplate)
+                        .withJdbcConnection(connection)
                         .withTableName(tableName)
                         .usingHibernateBeanUtils(persistenceAnnotationInspector)
                         .allowNull()

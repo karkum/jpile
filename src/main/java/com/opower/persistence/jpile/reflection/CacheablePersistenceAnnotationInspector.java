@@ -14,7 +14,6 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.googlecode.ehcache.annotations.Cacheable;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ReflectionUtils;
 
@@ -38,7 +37,6 @@ public class CacheablePersistenceAnnotationInspector implements PersistenceAnnot
      * @see org.springframework.core.annotation.AnnotationUtils
      */
     @Override
-    @Cacheable(cacheName = "reflectionCache")
     public <A extends Annotation> A findAnnotation(Class<?> clazz, Class<A> annotationType) {
         return AnnotationUtils.findAnnotation(clazz, annotationType);
     }
@@ -50,7 +48,6 @@ public class CacheablePersistenceAnnotationInspector implements PersistenceAnnot
      * @see org.springframework.core.annotation.AnnotationUtils
      */
     @Override
-    @Cacheable(cacheName = "reflectionCache")
     public <A extends Annotation> A findAnnotation(Method method, Class<A> annotationType) {
         return AnnotationUtils.findAnnotation(method, annotationType);
     }
@@ -59,7 +56,6 @@ public class CacheablePersistenceAnnotationInspector implements PersistenceAnnot
      * {@inheritDoc}
      */
     @Override
-    @Cacheable(cacheName = "reflectionCache")
     public boolean hasAnnotation(Method method, Class<? extends Annotation> annotationType) {
         return findAnnotation(method, annotationType) != null;
     }
@@ -68,7 +64,6 @@ public class CacheablePersistenceAnnotationInspector implements PersistenceAnnot
      * {@inheritDoc}
      */
     @Override
-    @Cacheable(cacheName = "reflectionCache")
     public boolean hasAnnotation(Class<?> clazz, Class<? extends Annotation> annotationType) {
         return findAnnotation(clazz, annotationType) != null;
     }
@@ -77,7 +72,6 @@ public class CacheablePersistenceAnnotationInspector implements PersistenceAnnot
      * {@inheritDoc}
      */
     @Override
-    @Cacheable(cacheName = "reflectionCache")
     public String tableName(Class<?> aClass) {
         Table table = findAnnotation(aClass, Table.class);
         Preconditions.checkNotNull(table);
@@ -93,7 +87,6 @@ public class CacheablePersistenceAnnotationInspector implements PersistenceAnnot
      * {@inheritDoc}
      */
     @Override
-    @Cacheable(cacheName = "reflectionCache")
     public boolean hasTableAnnotation(Class<?> aClass) {
         return hasAnnotation(aClass, Table.class);
     }
@@ -102,7 +95,6 @@ public class CacheablePersistenceAnnotationInspector implements PersistenceAnnot
      * {@inheritDoc}
      */
     @Override
-    @Cacheable(cacheName = "reflectionCache")
     public String secondaryTable(Class<?> aClass) {
         SecondaryTable table = findAnnotation(aClass, SecondaryTable.class);
         if(table != null) {
@@ -115,7 +107,6 @@ public class CacheablePersistenceAnnotationInspector implements PersistenceAnnot
      * {@inheritDoc}
      */
     @Override
-    @Cacheable(cacheName = "reflectionCache")
     public List<SecondaryTable> findSecondaryTables(Class<?> aClass) {
         List<SecondaryTable> annotations = ImmutableList.of();
         SecondaryTable secondaryTable = findAnnotation(aClass, SecondaryTable.class);
@@ -133,7 +124,6 @@ public class CacheablePersistenceAnnotationInspector implements PersistenceAnnot
      * {@inheritDoc}
      */
     @Override
-    @Cacheable(cacheName = "reflectionCache")
     public Method idGetter(Class<?> aClass) {
         List<AnnotatedMethod<Id>> methods = annotatedMethodsWith(aClass, Id.class);
         return methods.size() > 0 ? methods.get(0).getMethod() : null;
@@ -143,7 +133,6 @@ public class CacheablePersistenceAnnotationInspector implements PersistenceAnnot
      * {@inheritDoc}
      */
     @Override
-    @Cacheable(cacheName = "reflectionCache")
     public Method setterFromGetter(Method getter) {
         Preconditions.checkNotNull(getter, "Cannot find setter from null getter");
         Class aClass = getter.getDeclaringClass();
@@ -154,7 +143,6 @@ public class CacheablePersistenceAnnotationInspector implements PersistenceAnnot
      * {@inheritDoc}
      */
     @Override
-    @Cacheable(cacheName = "reflectionCache")
     public Method getterFromSetter(Method setter) {
         Preconditions.checkNotNull(setter, "Cannot find getter from null setter");
         Class aClass = setter.getDeclaringClass();
@@ -165,7 +153,6 @@ public class CacheablePersistenceAnnotationInspector implements PersistenceAnnot
      * {@inheritDoc}
      */
     @Override
-    @Cacheable(cacheName = "reflectionCache")
     public Field fieldFromGetter(Method getter) {
         Class aClass = getter.getDeclaringClass();
         String fieldName = getter.getName().replaceFirst("get", "");
@@ -177,7 +164,6 @@ public class CacheablePersistenceAnnotationInspector implements PersistenceAnnot
      * {@inheritDoc}
      */
     @Override
-    @Cacheable(cacheName = "reflectionCache")
     public <A extends Annotation> List<AnnotatedMethod<A>> annotatedMethodsWith(Class<?> aClass, Class<A> annotation) {
         List<AnnotatedMethod<A>> methods = newArrayList();
         for(Method m : ReflectionUtils.getAllDeclaredMethods(aClass)) {
@@ -195,7 +181,6 @@ public class CacheablePersistenceAnnotationInspector implements PersistenceAnnot
      * {@inheritDoc}
      */
     @Override
-    @Cacheable(cacheName = "reflectionCache")
     public List<Method> methodsAnnotatedWith(Class<?> aClass, final Class... annotations) {
         return methodsAnnotatedWith(aClass, new Predicate<Method>() {
             @Override
@@ -216,7 +201,6 @@ public class CacheablePersistenceAnnotationInspector implements PersistenceAnnot
      * {@inheritDoc}
      */
     @Override
-    @Cacheable(cacheName = "reflectionCache")
     public List<Method> methodsAnnotatedWith(Class<?> aClass, Predicate<Method> predicate) {
         return newArrayList(Iterables.filter(copyOf(ReflectionUtils.getAllDeclaredMethods(aClass)), predicate));
     }

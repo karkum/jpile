@@ -6,6 +6,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -18,16 +20,13 @@ import javax.persistence.SecondaryTable;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
-import com.opower.persistence.jpile.config.JPileApplicationConfig;
 import com.opower.persistence.jpile.infile.InfileDataBuffer;
+import com.opower.persistence.jpile.infile.JdbcUtil;
 import com.opower.persistence.jpile.reflection.CacheablePersistenceAnnotationInspector;
+import com.opower.persistence.jpile.reflection.CachedProxy;
 import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.collect.ImmutableList.copyOf;
@@ -58,23 +57,13 @@ import static com.google.common.collect.Sets.newHashSet;
  * @since 1.0
  */
 public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
-    private static ApplicationContext applicationContext;
     private static Logger logger = LoggerFactory.getLogger(HierarchicalInfileObjectLoader.class);
 
-    static {
-        applicationContext = new AnnotationConfigApplicationContext(JPileApplicationConfig.class);
-    }
-
-
-    /**
-     * This is bad practice because it is breaking dependency injection guidelines. I don't have a better solution as of now
-     * but I will revisit to see if I can improve this without needing an application context.
-     */
     private PersistenceAnnotationInspector persistenceAnnotationInspector =
-            applicationContext.getBean(PersistenceAnnotationInspector.class);
+            CachedProxy.create(PersistenceAnnotationInspector.class, new CacheablePersistenceAnnotationInspector());
 
     private CallBack eventCallback = new NoOpCallBack();
-    private JdbcTemplate jdbcTemplate = null;
+    private Connection connection;
 
     // linked for consistent error message
     private Map<Class<?>, SingleInfileObjectLoader<Object>> primaryObjectLoaders = newLinkedHashMap();
@@ -85,10 +74,6 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
     private Set<String> secondaryClassesToIgnore = ImmutableSet.of();
 
 
-    public HierarchicalInfileObjectLoader() {
-        this.persistenceAnnotationInspector = applicationContext.getBean(PersistenceAnnotationInspector.class);
-    }
-
     /**
      * Disables fk (if not already disabled) and saves each object
      *
@@ -96,7 +81,7 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
      * @param moreObjects optional more objects
      */
     public void persist(Object firstObject, Object... moreObjects) {
-        Preconditions.checkNotNull("Connection is null, did you call setConnection()?", jdbcTemplate);
+        Preconditions.checkNotNull("Connection is null, did you call setConnection()?", connection);
         for(Object o : concat(of(firstObject), copyOf(moreObjects))) {
             persistWithCyclicCheck(o, new HashSet<Object>());
         }
@@ -185,7 +170,7 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
         SingleInfileObjectLoader<Object> primaryLoader = new SingleInfileObjectLoaderBuilder<Object>((Class<Object>) aClass)
                 .withBuffer(newInfileDataBuffer())
                 .withDefaultTableName()
-                .withJdbcTemplate(jdbcTemplate)
+                .withJdbcConnection(connection)
                 .usingHibernateBeanUtils(persistenceAnnotationInspector)
                 .build();
 
@@ -199,7 +184,7 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
                         .withBuffer(newInfileDataBuffer())
                         .withDefaultTableName()
                         .usingSecondaryTable(secondaryTable)
-                        .withJdbcTemplate(jdbcTemplate)
+                        .withJdbcConnection(connection)
                         .usingHibernateBeanUtils(persistenceAnnotationInspector)
                         .build();
 
@@ -301,15 +286,15 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
         secondaryTableObjectLoaders.clear();
     }
 
-    /**
-     * Wraps the connection in a {@link SingleConnectionDataSource} because foreign keys need to be disabled. With
-     * multiple connections foreign keys and not guaranteed to be always disabled.
-     *
-     * @param connection the connection use for the database
-     */
+
     public void setConnection(Connection connection) {
-        this.jdbcTemplate = new JdbcTemplate(new SingleConnectionDataSource(connection, true));
-        this.jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0;");
+        this.connection = connection;
+        JdbcUtil.execute(this.connection, new JdbcUtil.StatementCallback<Boolean>() {
+            @Override
+            public Boolean doInStatement(Statement statement) throws SQLException {
+                return statement.execute("SET FOREIGN_KEY_CHECKS = 0");
+            }
+        });
     }
 
     public void setClassesToIgnore(Set<Class> classToIgnore) {
