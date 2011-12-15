@@ -20,10 +20,21 @@ public class C3P0JdbcDriverSupport implements InfileStatementCallback.JdbcDriver
     // of the method on the MySQL statement that we invoke via reflection.
     private static final String INFILE_MUTATOR_METHOD = "setLocalInfileInputStream";
 
+    private static Class targetInterface;
+
+    static {
+        try {
+            // Use Class.forName because we might not have this driver in classpath
+            targetInterface = Class.forName("com.mchange.v2.c3p0.C3P0ProxyStatement");
+        }
+        catch(ClassNotFoundException e) {
+            targetInterface = null;
+        }
+    }
+
     @Override
     public boolean accept(Statement statement) {
-        // Use #getSimpleName() instead of instanceof because we may not have this driver in classpath
-        return statement.getClass().getSimpleName().equals("C3P0ProxyStatement");
+        return targetInterface != null && targetInterface.isInstance(statement);
     }
 
     @Override
