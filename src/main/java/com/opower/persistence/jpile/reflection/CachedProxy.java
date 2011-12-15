@@ -3,6 +3,7 @@ package com.opower.persistence.jpile.reflection;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.cache.Cache;
@@ -27,26 +28,24 @@ public final class CachedProxy {
     private static final class Args {
         private final Method method;
         private final Object[] args;
-        private final int hash;
 
         public Args(final Method method, final Object[] args) {
             this.method = method;
             this.args = args;
-            this.hash = Objects.hashCode(method, args);
         }
 
         @Override
         public boolean equals(final Object obj) {
             if(obj instanceof Args) {
                 Args other = (Args) obj;
-                return Objects.equal(this.method, other.method) && Objects.equal(this.args, other.args);
+                return Objects.equal(this.method, other.method) && Arrays.deepEquals(this.args, other.args);
             }
             return false;
         }
 
         @Override
         public int hashCode() {
-            return hash;
+            return 31 * method.hashCode() + Arrays.deepHashCode(args);
         }
     }
 
