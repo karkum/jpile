@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
  * Instances of this class are not safe for use by multiple threads.
  *
  * @author Sean-Michael
+ * @author aaron.silverman
+ * @author amir.raminfar
  * @see <a href="http://dev.mysql.com/doc/refman/5.1/en/load-data.html">LOAD DATA INFILE reference</a>
  * @since 1.0
  */
@@ -49,10 +51,11 @@ public class InfileDataBuffer implements InfileRow {
 
     // Infile constants
     protected static final char MYSQL_ESCAPE_CHAR = '\\';
-    protected static final String MYSQL_NULL_STRING = MYSQL_ESCAPE_CHAR +"N";
-    protected static final String MYSQL_ESCAPED_STRING = ""+MYSQL_ESCAPE_CHAR;
-    protected static final String ESCAPED_MYSQL_ESCAPE_STRING = MYSQL_ESCAPED_STRING+MYSQL_ESCAPED_STRING;
+    protected static final String MYSQL_NULL_STRING = MYSQL_ESCAPE_CHAR + "N";
+    protected static final String MYSQL_ESCAPED_STRING = String.valueOf(MYSQL_ESCAPE_CHAR);
+    protected static final String ESCAPED_MYSQL_ESCAPE_STRING = MYSQL_ESCAPED_STRING + MYSQL_ESCAPED_STRING;
 
+    // Using Joda time which is thread safe
     protected static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd");
 
     // Utilities
@@ -155,7 +158,7 @@ public class InfileDataBuffer implements InfileRow {
     @Override
     public final InfileRow append(byte b) {
         this.appendTabIfNeeded();
-        if (b == MYSQL_ESCAPE_CHAR) {
+        if(b == MYSQL_ESCAPE_CHAR) {
             this.rowBuffer.put(b);
         }
         this.rowBuffer.put(b);
@@ -168,8 +171,8 @@ public class InfileDataBuffer implements InfileRow {
     @Override
     public final InfileRow append(byte[] bytes) {
         this.appendTabIfNeeded();
-        for (byte b : bytes) {
-            if (b == MYSQL_ESCAPE_CHAR) {
+        for(byte b : bytes) {
+            if(b == MYSQL_ESCAPE_CHAR) {
                 this.rowBuffer.put(b);
             }
             this.rowBuffer.put(b);

@@ -14,8 +14,6 @@ import static org.junit.Assert.assertEquals;
  *
  * @author aaron.silverman
  */
-// TODO: these test cases were created to address the issue of properly escaping bytes, however ideally a comprehensive set of
-//       test cases will be created
 public class InfileDataBufferTest {
 
     private InfileDataBuffer infileDataBuffer;
@@ -41,13 +39,13 @@ public class InfileDataBufferTest {
 
     @Test
     public void testAppendByte() {
-        infileDataBuffer.append((byte)65);
+        infileDataBuffer.append((byte) 65);
         addRowAndAssertContents("A");
     }
 
     @Test
     public void testAppendByteNeedingEscaping() {
-        infileDataBuffer.append((byte)92);
+        infileDataBuffer.append((byte) 92);
         addRowAndAssertContents("\\\\");
     }
 
@@ -76,7 +74,7 @@ public class InfileDataBufferTest {
             infileDataBuffer.addRowToInfile();
             assertEquals(expected, CharStreams.toString(new InputStreamReader(infileDataBuffer.asInputStream())));
         }
-        catch (IOException ex) {
+        catch(IOException ex) {
             throw Throwables.propagate(ex);
         }
     }
