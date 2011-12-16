@@ -47,7 +47,7 @@ jPile is very easy to use. If you are using Maven, then add the following depend
 <dependency>
     <groupId>com.opower</groupId>
     <artifactId>jpile</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
 </dependency>
 ```
 
