@@ -48,7 +48,11 @@ public class InfileDataBuffer implements InfileRow {
     public static final int DEFAULT_ROW_BUFFER_SIZE = 1024 * 2; // 2kB
 
     // Infile constants
-    protected static final String MYSQL_NULL_STRING = "\\N";
+    protected static final char MYSQL_ESCAPE_CHAR = '\\';
+    protected static final String MYSQL_NULL_STRING = MYSQL_ESCAPE_CHAR +"N";
+    protected static final String MYSQL_ESCAPED_STRING = ""+MYSQL_ESCAPE_CHAR;
+    protected static final String ESCAPED_MYSQL_ESCAPE_STRING = MYSQL_ESCAPED_STRING+MYSQL_ESCAPED_STRING;
+
     protected static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd");
 
     // Utilities
@@ -151,6 +155,9 @@ public class InfileDataBuffer implements InfileRow {
     @Override
     public final InfileRow append(byte b) {
         this.appendTabIfNeeded();
+        if (b == MYSQL_ESCAPE_CHAR) {
+            this.rowBuffer.put(b);
+        }
         this.rowBuffer.put(b);
         return this;
     }
@@ -161,7 +168,12 @@ public class InfileDataBuffer implements InfileRow {
     @Override
     public final InfileRow append(byte[] bytes) {
         this.appendTabIfNeeded();
-        this.rowBuffer.put(bytes);
+        for (byte b : bytes) {
+            if (b == MYSQL_ESCAPE_CHAR) {
+                this.rowBuffer.put(b);
+            }
+            this.rowBuffer.put(b);
+        }
         return this;
     }
 
@@ -176,7 +188,7 @@ public class InfileDataBuffer implements InfileRow {
         this.appendTabIfNeeded();
         // MySQL interprets backslashes as an escape character.  We want it to treat a backslash as a backslash so
         // we escape it.
-        String escapedStr = s.replace("\\", "\\\\");
+        String escapedStr = s.replace(MYSQL_ESCAPED_STRING, ESCAPED_MYSQL_ESCAPE_STRING);
         CoderResult result = this.encoder.encode(CharBuffer.wrap(escapedStr), this.rowBuffer, false);
         if(!result.isUnderflow()) {
             try {
@@ -218,7 +230,9 @@ public class InfileDataBuffer implements InfileRow {
      */
     @Override
     public final InfileRow appendNull() {
-        return this.append(this.nullBytes);
+        this.appendTabIfNeeded();
+        this.rowBuffer.put(this.nullBytes);
+        return this;
     }
 
     /**
