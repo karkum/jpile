@@ -9,7 +9,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 import java.util.Date;
+import java.util.Set;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -51,9 +53,18 @@ public class InfileDataBuffer implements InfileRow {
 
     // Infile constants
     protected static final char MYSQL_ESCAPE_CHAR = '\\';
-    protected static final String MYSQL_NULL_STRING = MYSQL_ESCAPE_CHAR + "N";
-    protected static final String MYSQL_ESCAPED_STRING = String.valueOf(MYSQL_ESCAPE_CHAR);
-    protected static final String ESCAPED_MYSQL_ESCAPE_STRING = MYSQL_ESCAPED_STRING + MYSQL_ESCAPED_STRING;
+    protected static final String MYSQL_NULL_STRING = MYSQL_ESCAPE_CHAR +"N";
+    protected static final String MYSQL_ESCAPED_STRING = ""+MYSQL_ESCAPE_CHAR;
+    protected static final String ESCAPED_MYSQL_ESCAPE_STRING = MYSQL_ESCAPED_STRING+MYSQL_ESCAPED_STRING;
+    // List of bytes that will need escaping as they hold special meaning to MYSQL
+    // See http://dev.mysql.com/doc/refman/5.1/en/load-data.html
+    protected static final Set<Byte> BYTES_NEEDING_ESCAPING = ImmutableSet.of((byte)'\0',
+                                                                            (byte)'\b',
+                                                                            (byte)'\n',
+                                                                            (byte)'\r',
+                                                                            (byte)'\t',
+                                                                            (byte)26, //Ctrl+Z
+                                                                            (byte)MYSQL_ESCAPE_CHAR);
 
     // Using Joda time which is thread safe
     protected static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd");
@@ -158,10 +169,7 @@ public class InfileDataBuffer implements InfileRow {
     @Override
     public final InfileRow append(byte b) {
         this.appendTabIfNeeded();
-        if(b == MYSQL_ESCAPE_CHAR) {
-            this.rowBuffer.put(b);
-        }
-        this.rowBuffer.put(b);
+        appendByte(b);
         return this;
     }
 
@@ -171,13 +179,17 @@ public class InfileDataBuffer implements InfileRow {
     @Override
     public final InfileRow append(byte[] bytes) {
         this.appendTabIfNeeded();
-        for(byte b : bytes) {
-            if(b == MYSQL_ESCAPE_CHAR) {
-                this.rowBuffer.put(b);
-            }
-            this.rowBuffer.put(b);
+        for (byte b : bytes) {
+            appendByte(b);
         }
         return this;
+    }
+
+    private void appendByte(byte b) {
+        if (BYTES_NEEDING_ESCAPING.contains(b)) {
+            this.rowBuffer.put((byte)MYSQL_ESCAPE_CHAR);
+        }
+        this.rowBuffer.put(b);
     }
 
     /**
