@@ -85,6 +85,5 @@ jPile is released on the MIT license which is available in `license.txt` to read
 * jPile - 6s
 
 ## Performance Graph
-<div style="text-alignt:center">
-  <img alt="jPile Performance" src="http://i.imgur.com/2yiT2.jpg" />
-</div>
+
+![Performance Graph](http://i.imgur.com/2yiT2.jpg)
