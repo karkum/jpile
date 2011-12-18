@@ -59,8 +59,8 @@ public class InfileDataBuffer implements InfileRow {
     protected static final String ESCAPED_MYSQL_ESCAPE_STRING = MYSQL_ESCAPED_STRING + MYSQL_ESCAPED_STRING;
     // List of bytes that will need escaping as they hold special meaning to MYSQL
     // See http://dev.mysql.com/doc/refman/5.1/en/load-data.html
-    protected static final Set<Byte> BYTES_NEEDING_ESCAPING
-            = of((byte) '\0', (byte) '\b', (byte) '\n', (byte) '\r', (byte) '\t', (byte) MYSQL_ESCAPE_CHAR, (byte) 26);
+    protected static final Set<Byte> BYTES_NEEDING_ESCAPING =
+            of((byte) '\0', (byte) '\b', (byte) '\n', (byte) '\r', (byte) '\t', (byte) MYSQL_ESCAPE_CHAR, (byte) 26);
 
     // Using Joda time which is thread safe
     protected static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd");
