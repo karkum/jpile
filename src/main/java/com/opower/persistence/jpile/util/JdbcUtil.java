@@ -1,4 +1,4 @@
-package com.opower.persistence.jpile.infile;
+package com.opower.persistence.jpile.util;
 
 import java.sql.Connection;
 import java.sql.SQLException;
