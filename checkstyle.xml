@@ -4,11 +4,9 @@
 
 <module name="Checker">
     <module name="Translation"/>
-
     <module name="FileLength"/>
     <module name="FileTabCharacter"/>
     <module name="TreeWalker">
-
         <property name="tabWidth" value="4"/>
 
         <!-- Checks for Javadoc comments.                     -->
@@ -65,11 +63,6 @@
             <property name="max" value="128"/>
             <property name="ignorePattern" value="@version|@see|^import|^ *\*"/>
         </module>
-        <!-- TODO: put back in later
-        <module name="MethodLength">
-          <property name="countEmpty" value="false"/>
-        </module>
-        -->
         <module name="ParameterNumber">
             <property name="id" value="restrictParameterNumber"/>
             <property name="max" value="10"/>
@@ -138,7 +131,7 @@
         <module name="MissingSwitchDefault"/>
         <module name="DefaultComesLast"/>
         <module name="PackageDeclaration"/>
-        <!-- <module name="RedundantThrows"/> -->
+
         <module name="SimplifyBooleanExpression"/>
         <module name="SimplifyBooleanReturn"/>
         <module name="StringLiteralEquality"/>
@@ -168,5 +161,12 @@
 
         <!-- Check that when a {@inheritDoc} tag is present, that @Override is also present -->
         <module name="MissingOverride"/>
+
+
+        <module name="EqualsAvoidNull"/>
+        <module name="RedundantThrows"/>
+        <module name="WhitespaceAround">
+            <property name="tokens" value="STAR,ASSIGN,PLUS,MINUS,EQUAL,GE,GT,LE,LT,NOT_EQUAL"/>
+        </module>
     </module>
 </module>
