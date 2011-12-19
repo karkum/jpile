@@ -2,6 +2,8 @@ package com.opower.persistence.jpile.loader;
 
 import java.lang.reflect.Method;
 import java.sql.Connection;
+import java.util.List;
+import java.util.Map;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.GeneratedValue;
@@ -11,11 +13,14 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTable;
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import com.opower.persistence.jpile.infile.InfileDataBuffer;
 import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 
 
@@ -196,11 +201,37 @@ public class SingleInfileObjectLoaderBuilder<E> {
     }
 
     private void generateLoadInfileSql(SingleInfileObjectLoader<E> objectLoader) {
-        objectLoader.loadInfileSql = "LOAD DATA LOCAL INFILE 'stream' INTO TABLE "
-                                     + tableName
-                                     + " ("
-                                     + Joiner.on(", ").join(objectLoader.getAllColumns())
-                                     + ")";
+        StringBuilder builder = new StringBuilder("LOAD DATA LOCAL INFILE 'stream' INTO TABLE ");
+        builder.append(tableName).append(" (");
+
+        List<String> hexColumns = newArrayList();
+        List<String> columns = newArrayList();
+
+        for(Map.Entry<String, Method> entry : objectLoader.getMappings().entrySet()) {
+            Class type = entry.getValue().getReturnType();
+            if(type.isArray() && type.getComponentType() == byte.class) {
+                hexColumns.add(entry.getKey());
+                columns.add("@hex" + entry.getKey());
+            }
+            else {
+                columns.add(entry.getKey());
+            }
+        }
+        Joiner joiner = Joiner.on(",");
+        builder.append(joiner.join(columns)).append(") ");
+
+        if(!hexColumns.isEmpty()) {
+            builder.append("SET ");
+            Iterable<String> updates = Iterables.transform(hexColumns, new Function<String, String>() {
+                @Override
+                public String apply(String input) {
+                    return String.format("%1$s=unhex(@hex%1$s)", input);
+                }
+            });
+            builder.append(joiner.join(updates));
+        }
+
+        objectLoader.loadInfileSql = builder.toString();
     }
 
 }

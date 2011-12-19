@@ -21,10 +21,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.opower.persistence.jpile.infile.InfileDataBuffer;
-import com.opower.persistence.jpile.infile.JdbcUtil;
 import com.opower.persistence.jpile.reflection.CacheablePersistenceAnnotationInspector;
 import com.opower.persistence.jpile.reflection.CachedProxy;
 import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
+import com.opower.persistence.jpile.util.JdbcUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

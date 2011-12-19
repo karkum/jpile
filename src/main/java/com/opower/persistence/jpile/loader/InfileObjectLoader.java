@@ -8,7 +8,7 @@ import com.google.common.base.Preconditions;
 import com.opower.persistence.jpile.infile.InfileDataBuffer;
 import com.opower.persistence.jpile.infile.InfileRow;
 import com.opower.persistence.jpile.infile.InfileStatementCallback;
-import com.opower.persistence.jpile.infile.JdbcUtil;
+import com.opower.persistence.jpile.util.JdbcUtil;
 
 /**
  * This class provides a convenient pattern for loading POJOs in batch to MySQL via tha 'LOAD DATA INFILE' protocol.

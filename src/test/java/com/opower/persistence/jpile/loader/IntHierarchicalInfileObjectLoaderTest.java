@@ -1,15 +1,23 @@
 package com.opower.persistence.jpile.loader;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import com.opower.persistence.jpile.AbstractIntTestForJPile;
 import com.opower.persistence.jpile.sample.Customer;
+import com.opower.persistence.jpile.sample.Data;
 import com.opower.persistence.jpile.sample.ObjectFactory;
 import com.opower.persistence.jpile.sample.Product;
 import org.junit.Test;
+import org.springframework.jdbc.core.RowMapper;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * Tests object loader for correctness
@@ -57,5 +65,36 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
         for(int i = 0; i < 100; i++) {
             hierarchicalInfileObjectLoader.persist(ObjectFactory.newCustomer());
         }
+    }
+
+    @Test
+    public void testBinaryDataToHex() throws NoSuchAlgorithmException {
+        String string = "Data to be inserted";
+        byte[] md5 = toMd5(string);
+        Data data = new Data();
+        data.setName(string);
+        data.setMd5(md5);
+
+        hierarchicalInfileObjectLoader.persist(data);
+        hierarchicalInfileObjectLoader.flush();
+
+        Data actual = simpleJdbcTemplate.queryForObject("select * from binary_data", new RowMapper<Data>() {
+            @Override
+            public Data mapRow(ResultSet rs, int rowNum) throws SQLException {
+                Data data = new Data();
+                data.setId(rs.getLong("id"));
+                data.setName(rs.getString("name"));
+                data.setMd5(rs.getBytes("md5"));
+                return data;
+            }
+        });
+
+        assertTrue(Arrays.equals(md5, actual.getMd5()));
+    }
+
+    private byte[] toMd5(String s) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        md.update(s.getBytes());
+        return md.digest();
     }
 }

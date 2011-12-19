@@ -47,6 +47,7 @@ public abstract class AbstractIntTestForJPile {
         simpleJdbcTemplate.update("truncate product");
         simpleJdbcTemplate.update("truncate contact");
         simpleJdbcTemplate.update("truncate contact_phone");
+        simpleJdbcTemplate.update("truncate binary_data");
         connection.close();
     }
 }
