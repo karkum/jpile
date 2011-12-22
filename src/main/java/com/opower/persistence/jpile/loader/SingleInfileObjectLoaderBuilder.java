@@ -205,6 +205,7 @@ public class SingleInfileObjectLoaderBuilder<E> {
         List<String> updates = newArrayList();
         List<String> columns = newArrayList();
 
+        // Look for byte[] and update the sql to have unhex function
         for(Map.Entry<String, Method> entry : objectLoader.getMappings().entrySet()) {
             Class type = entry.getValue().getReturnType();
             if(type.isArray() && type.getComponentType() == byte.class) {
@@ -219,6 +220,7 @@ public class SingleInfileObjectLoaderBuilder<E> {
         Joiner joiner = Joiner.on(",");
         builder.append(joiner.join(columns)).append(") ");
 
+        // If we had any hex columns then append here
         if(!updates.isEmpty()) {
             builder.append("SET ");
             builder.append(joiner.join(updates));
