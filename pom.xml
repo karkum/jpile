@@ -71,15 +71,12 @@
                 <version>2.8</version>
                 <configuration>
                     <configLocation>checkstyle.xml</configLocation>
+                    <failsOnError>true</failsOnError>
+                    <consoleOutput>true</consoleOutput>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
                 </configuration>
                 <executions>
                     <execution>
-                        <configuration>
-                            <configLocation>checkstyle.xml</configLocation>
-                            <failsOnError>true</failsOnError>
-                            <consoleOutput>true</consoleOutput>
-                            <includeTestSourceDirectory>true</includeTestSourceDirectory>
-                        </configuration>
                         <id>checkstyle</id>
                         <phase>compile</phase>
                         <goals>
