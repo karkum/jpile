@@ -22,8 +22,8 @@ import static com.google.common.collect.ImmutableList.of;
 import static com.google.common.collect.Lists.newArrayList;
 
 /**
- * The default implementation which parses the annotations. You should not create an instance of this. It should
- * be created by Spring so that the @Cacheable annotations are parsed correctly.
+ * The default implementation which parses the annotations. This class should be used with {@link CachedProxy} to cache
+ * the reflection calls. Without caching, there is a huge performance loss.
  *
  * @author amir.raminfar
  * @since 1.0

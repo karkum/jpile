@@ -13,7 +13,10 @@ import com.google.common.cache.CacheLoader;
 /**
  * Creates an intermediate proxy object for a given interface. All calls are cached. See
  * <a href="https://github.com/martinus/java-playground/blob/master/src/java/com/ankerl/proxy/CachedProxy.java">CachedProxy</a>
- * for the original idea.
+ * for the original idea. An example of usage is:
+ * <pre>
+ *     MyInterface cached = CachedProxy.create(MyInterface.class, theImplementation);
+ * </pre>
  *
  * @author Martin Ankerl (martin.ankerl@gmail.at)
  * @author amir.raminfar
