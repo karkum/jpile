@@ -15,7 +15,7 @@ import com.google.common.cache.CacheLoader;
  * <a href="https://github.com/martinus/java-playground/blob/master/src/java/com/ankerl/proxy/CachedProxy.java">CachedProxy</a>
  * for the original idea. An example of usage is:
  * <pre>
- *     MyInterface cached = CachedProxy.create(MyInterface.class, theImplementation);
+ *     MyInterface cached = CachedProxy.create(theImplementation);
  * </pre>
  *
  * @author Martin Ankerl (martin.ankerl@gmail.at)
@@ -56,21 +56,21 @@ public final class CachedProxy {
      * Creates an intermediate proxy object that uses cached results if
      * available, otherwise calls the given code.
      *
-     * @param <T>  Type of the class.
-     * @param cl   The interface for which the proxy should be created.
-     * @param code The actual calculation code that should be cached.
+     * @param <T>  Type of the class.     
+     * @param impl The actual calculation code that should be cached.
      * @return The proxy.
      */
     @SuppressWarnings("unchecked")
-    public static <T> T create(final Class<T> cl, final T code) {
-        return (T) Proxy.newProxyInstance(cl.getClassLoader(), new Class[]{cl}, new InvocationHandler() {
+    public static <T> T create(final T impl) {
+        Class<T> tClass = (Class<T>) impl.getClass();
+        return (T) Proxy.newProxyInstance(tClass.getClassLoader(), tClass.getInterfaces(), new InvocationHandler() {
             final Cache<Args, Optional> cache = CacheBuilder
                     .newBuilder()
                     .softValues()
                     .build(new CacheLoader<Args, Optional>() {
                         @Override
                         public Optional load(Args key) throws Exception {
-                            return Optional.fromNullable(key.method.invoke(code, key.args));
+                            return Optional.fromNullable(key.method.invoke(impl, key.args));
                         }
                     });
 

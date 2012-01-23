@@ -1,6 +1,7 @@
 package com.opower.persistence.jpile.reflection;
 
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -19,13 +20,22 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class CachedProxyTest {
+    private static final String FOO = "foo";
+    private static final String BAR = "bar";
+
     @Mock
     private MyInterface theImplementation;
+
+    private MyInterface cached;
+
+    @Before
+    public void setUp() throws Exception {
+        cached = CachedProxy.create(theImplementation);
+    }
 
     @Test
     public void testWithVarArray() {
         when(theImplementation.doSomethingWithVarParams(1, true, "test")).thenReturn("results!");
-        MyInterface cached = CachedProxy.create(MyInterface.class, theImplementation);
         assertEquals("results!", cached.doSomethingWithVarParams(1, true, "test"));
         cached.doSomethingWithVarParams(1, true, "test"); // Call it again
         verify(theImplementation, times(1)).doSomethingWithVarParams(1, true, "test");
@@ -33,20 +43,18 @@ public class CachedProxyTest {
 
     @Test
     public void testWithSingleParam() {
-        when(theImplementation.doSomethingWithObject("foo")).thenReturn("bar");
-        MyInterface cached = CachedProxy.create(MyInterface.class, theImplementation);
-        assertEquals("bar", cached.doSomethingWithObject("foo"));
-        cached.doSomethingWithObject("foo");
-        verify(theImplementation, times(1)).doSomethingWithObject("foo");
+        when(theImplementation.doSomethingWithObject(FOO)).thenReturn(BAR);
+        assertEquals(BAR, cached.doSomethingWithObject(FOO));
+        cached.doSomethingWithObject(FOO);
+        verify(theImplementation, times(1)).doSomethingWithObject(FOO);
     }
 
     @Test
     public void testReturningNull() {
-        when(theImplementation.doSomethingWithObject("foo")).thenReturn(null);
-        MyInterface cached = CachedProxy.create(MyInterface.class, theImplementation);
-        assertNull(cached.doSomethingWithObject("foo"));
-        cached.doSomethingWithObject("foo");
-        verify(theImplementation, times(1)).doSomethingWithObject("foo");
+        when(theImplementation.doSomethingWithObject(FOO)).thenReturn(null);
+        assertNull(cached.doSomethingWithObject(FOO));
+        cached.doSomethingWithObject(FOO);
+        verify(theImplementation, times(1)).doSomethingWithObject(FOO);
     }
 
     private interface MyInterface {

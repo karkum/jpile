@@ -60,7 +60,7 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
     private static Logger logger = LoggerFactory.getLogger(HierarchicalInfileObjectLoader.class);
 
     private PersistenceAnnotationInspector persistenceAnnotationInspector =
-            CachedProxy.create(PersistenceAnnotationInspector.class, new CacheablePersistenceAnnotationInspector());
+            CachedProxy.create(new CacheablePersistenceAnnotationInspector());
 
     private CallBack eventCallback = new NoOpCallBack();
     private Connection connection;
