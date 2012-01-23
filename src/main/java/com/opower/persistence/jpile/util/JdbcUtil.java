@@ -28,15 +28,15 @@ public final class JdbcUtil {
             statement = connection.createStatement();
             return statementCallback.doInStatement(statement);
         }
-        catch(SQLException e) {
+        catch (SQLException e) {
             throw Throwables.propagate(e);
         }
         finally {
-            if(statement != null) {
+            if (statement != null) {
                 try {
                     statement.close();
                 }
-                catch(SQLException e) {
+                catch (SQLException e) {
                     // Do nothing
                 }
             }
@@ -45,8 +45,6 @@ public final class JdbcUtil {
 
     /**
      * A helper callback method for this util class
-     *
-     * @param <E>
      */
     public interface StatementCallback<E> {
         /**

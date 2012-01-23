@@ -24,7 +24,7 @@ public abstract class AbstractIntTestForJPile {
         try {
             Class.forName("com.mysql.jdbc.Driver");
         }
-        catch(ClassNotFoundException e) {
+        catch (ClassNotFoundException e) {
             throw Throwables.propagate(e);
         }
     }

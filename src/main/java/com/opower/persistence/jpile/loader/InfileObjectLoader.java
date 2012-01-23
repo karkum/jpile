@@ -16,11 +16,11 @@ import com.opower.persistence.jpile.util.JdbcUtil;
  * to infile rows in the data buffer. When said buffer is full, this class will automatically flush the contents of said
  * buffer to the database using the given SQL statement. Subclasses must only implement the translation of their
  * parameterized type to an infile row.
- * <p>
+ * <p/>
  * Clients should be certain to call {@link #flush()} after they are finished adding objects to the loader via the
  * {@link #add(Object)} method. This will ensure that any objects that were not auto-flushed as a result of a full buffer
  * are pushed as well.
- * <p>
+ * <p/>
  * Instances of this class are not safe for use by multiple threads.
  *
  * @param <E> entity to be converted to infile row
@@ -67,9 +67,9 @@ public abstract class InfileObjectLoader<E> implements Flushable {
         Preconditions.checkNotNull(entity, "Entity to add cannot be null");
 
         this.convertToInfileRow(entity, this.infileDataBuffer.newRow());
-        if(!this.infileDataBuffer.addRowToInfile()) {
+        if (!this.infileDataBuffer.addRowToInfile()) {
             this.flush();
-            if(!this.infileDataBuffer.addRowToInfile()) {
+            if (!this.infileDataBuffer.addRowToInfile()) {
                 // This should be impossible, as the buffer asserts that an empty infile can accept
                 // any valid row.
                 throw new IllegalStateException("Cannot add row to infile, even though infile has been flushed.");

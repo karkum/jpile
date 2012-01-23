@@ -21,8 +21,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.opower.persistence.jpile.infile.InfileDataBuffer;
-import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
 import com.opower.persistence.jpile.reflection.CachedProxy;
+import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
 import com.opower.persistence.jpile.util.JdbcUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +37,7 @@ import static com.google.common.collect.Sets.newHashSet;
 
 /**
  * Save any type of data using a collection of SingleInfileObjectLoaders. A common use case would be to do something like
- *
+ * <p/>
  * <pre>
  *     Connection connection = ...
  *     HierarchicalInfileObjectLoader objectLoader = new HierarchicalInfileObjectLoader();
@@ -81,7 +81,7 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
      */
     public void persist(Object firstObject, Object... moreObjects) {
         Preconditions.checkNotNull("Connection is null, did you call setConnection()?", connection);
-        for(Object o : concat(of(firstObject), copyOf(moreObjects))) {
+        for (Object o : concat(of(firstObject), copyOf(moreObjects))) {
             persistWithCyclicCheck(o, new HashSet<Object>());
         }
     }
@@ -90,13 +90,13 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
         Preconditions.checkNotNull(entity, "Cannot persist null");
 
         // If we already saved this object then ignore
-        if(cyclicCheck.contains(entity)) {
+        if (cyclicCheck.contains(entity)) {
             logger.debug("Skipping in file persist on [{}] because it has already been saved.", entity);
             return;
         }
 
         // If we are supposed to ignore this class then also ignore
-        if(classesToIgnore.contains(entity.getClass())) {
+        if (classesToIgnore.contains(entity.getClass())) {
             logger.debug("Ignoring [{}].", entity);
             return;
         }
@@ -110,9 +110,9 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
         cyclicCheck.add(entity);
 
         // Save dependent children first because there is a key that depends on these items
-        for(Method dependent : childDependent.get(entity.getClass())) {
+        for (Method dependent : childDependent.get(entity.getClass())) {
             Object o = invoke(dependent, entity);
-            if(o != null) {
+            if (o != null) {
                 persistWithCyclicCheck(o, cyclicCheck);
             }
         }
@@ -126,11 +126,11 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
         Object id = PersistenceAnnotationInspector.getIdValue(persistenceAnnotationInspector, entity);
 
         // Find all objects that depend entity's id being generated and save these now
-        for(Method dependent : parentDependent.get(entity.getClass())) {
+        for (Method dependent : parentDependent.get(entity.getClass())) {
             Object o = invoke(dependent, entity);
-            if(o != null) {
-                if(o instanceof Collection) {
-                    for(Object item : (Collection) o) {
+            if (o != null) {
+                if (o instanceof Collection) {
+                    for (Object item : (Collection) o) {
                         persistWithCyclicCheck(item, cyclicCheck);
                     }
                 }
@@ -142,7 +142,7 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
         }
 
         // Check to see if there is a secondary
-        if(secondaryTableObjectLoaders.containsKey(entity.getClass())) {
+        if (secondaryTableObjectLoaders.containsKey(entity.getClass())) {
             secondaryTableObjectLoaders.get(entity.getClass()).add(entity);
         }
     }
@@ -162,7 +162,7 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
     }
 
     private void createObjectLoader(Class<?> aClass) {
-        if(primaryObjectLoaders.containsKey(aClass)) {
+        if (primaryObjectLoaders.containsKey(aClass)) {
             return;
         }
         @SuppressWarnings("unchecked")
@@ -175,8 +175,8 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
 
         primaryObjectLoaders.put(aClass, primaryLoader);
 
-        for(SecondaryTable secondaryTable : persistenceAnnotationInspector.findSecondaryTables(aClass)) {
-            if(!secondaryClassesToIgnore.contains(secondaryTable.name())) {
+        for (SecondaryTable secondaryTable : persistenceAnnotationInspector.findSecondaryTables(aClass)) {
+            if (!secondaryClassesToIgnore.contains(secondaryTable.name())) {
                 @SuppressWarnings("unchecked")
                 SingleInfileObjectLoader<Object> secondaryLoader
                         = new SingleInfileObjectLoaderBuilder<Object>((Class<Object>) aClass)
@@ -194,7 +194,7 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
 
 
     private void findParentDependents(Class<?> aClass) {
-        if(parentDependent.containsKey(aClass)) {
+        if (parentDependent.containsKey(aClass)) {
             return;
         }
         Set<Method> methods = newHashSet(persistenceAnnotationInspector.methodsAnnotatedWith(aClass, OneToMany.class));
@@ -203,13 +203,13 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
         parentDependent.put(aClass, methods.size() > 0 ? methods : ImmutableSet.<Method>of());
 
         // Do all children again
-        for(Method m : methods) {
+        for (Method m : methods) {
             findParentDependents(getReturnType(m));
         }
     }
 
     private void findChildDependents(Class<?> aClass) {
-        if(childDependent.containsKey(aClass)) {
+        if (childDependent.containsKey(aClass)) {
             return;
         }
 
@@ -226,14 +226,14 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
         childDependent.put(aClass, methods.size() > 0 ? methods : ImmutableSet.<Method>of());
 
         // Do all children again
-        for(Method m : methods) {
+        for (Method m : methods) {
             findChildDependents(getReturnType(m));
         }
     }
 
     private Class getReturnType(Method m) {
         final Class returnType;
-        if(m.getGenericReturnType() instanceof ParameterizedType) {
+        if (m.getGenericReturnType() instanceof ParameterizedType) {
             // For List<String> etc...
             ParameterizedType type = (ParameterizedType) m.getGenericReturnType();
             returnType = (Class) type.getActualTypeArguments()[0];
@@ -252,10 +252,10 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
         try {
             return method.invoke(target);
         }
-        catch(InvocationTargetException e) {
+        catch (InvocationTargetException e) {
             throw propagate(e);
         }
-        catch(IllegalAccessException e) {
+        catch (IllegalAccessException e) {
             throw propagate(e);
         }
     }
@@ -266,10 +266,10 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
     @Override
     public void flush() {
         logger.debug("Flushing all object loaders.");
-        for(SingleInfileObjectLoader<?> loader : primaryObjectLoaders.values()) {
+        for (SingleInfileObjectLoader<?> loader : primaryObjectLoaders.values()) {
             loader.flush();
         }
-        for(SingleInfileObjectLoader<?> loader : secondaryTableObjectLoaders.values()) {
+        for (SingleInfileObjectLoader<?> loader : secondaryTableObjectLoaders.values()) {
             loader.flush();
         }
     }

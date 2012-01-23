@@ -42,7 +42,7 @@ public class Customer {
     }
 
     public void setProducts(List<Product> products) {
-        for(Product product : products) {
+        for (Product product : products) {
             product.setCustomer(this);
         }
         this.products = products;

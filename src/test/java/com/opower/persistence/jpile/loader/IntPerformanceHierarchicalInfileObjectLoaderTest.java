@@ -41,7 +41,7 @@ public class IntPerformanceHierarchicalInfileObjectLoaderTest extends AbstractIn
     @Before
     public void generateCustomers() throws Exception {
         customers = new Customer[CUSTOMER_TO_GENERATE];
-        for(int i = 0; i < customers.length; i++) {
+        for (int i = 0; i < customers.length; i++) {
             customers[i] = ObjectFactory.newCustomer();
         }
     }
@@ -62,7 +62,7 @@ public class IntPerformanceHierarchicalInfileObjectLoaderTest extends AbstractIn
             @Override
             public void run() {
                 try {
-                    for(long i = 0, customersLength = customers.length; i < customersLength; i++) {
+                    for (long i = 0, customersLength = customers.length; i < customersLength; i++) {
                         Customer c = customers[((int) i)];
                         c.setId(i + 1);
 
@@ -74,7 +74,7 @@ public class IntPerformanceHierarchicalInfileObjectLoaderTest extends AbstractIn
                         writeCustomer(customer, c);
                         customer.executeUpdate();
 
-                        for(Product p : c.getProducts()) {
+                        for (Product p : c.getProducts()) {
                             writeProduct(product, c, p);
                             product.executeUpdate();
                         }
@@ -86,7 +86,7 @@ public class IntPerformanceHierarchicalInfileObjectLoaderTest extends AbstractIn
                         phone.executeUpdate();
                     }
                 }
-                catch(SQLException e) {
+                catch (SQLException e) {
                     throw Throwables.propagate(e);
                 }
             }
@@ -113,7 +113,7 @@ public class IntPerformanceHierarchicalInfileObjectLoaderTest extends AbstractIn
             public void run() {
                 Session session = sessionFactory.openSession();
                 session.beginTransaction();
-                for(Customer customer : customers) {
+                for (Customer customer : customers) {
                     session.save(customer);
                 }
                 session.flush();

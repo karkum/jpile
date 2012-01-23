@@ -17,12 +17,12 @@ import static com.google.common.collect.ImmutableList.of;
  * do not stop for exceptional inserts necessarily, the driver collects all of the issues in
  * a {@link SQLWarning}. Since these statements do not return anything else that is meaningful, we
  * return this warning object, or null if there were no issues.
- * <p>
+ * <p/>
  * This class depends not only on the MySQL Connector-J driver, but also on the C3P0 connection pool.
  * The latter wraps all statements in a proxy, so when using the connection pool you must use its API
  * to access the underlying MySQL statement. This class hides all of this tomfoolery behind a very
  * simple facade.
- * <p>
+ * <p/>
  * Instances of this class are safe for use by multiple threads.
  *
  * @author s-m
@@ -53,8 +53,8 @@ public class InfileStatementCallback implements JdbcUtil.StatementCallback<List<
 
     @Override
     public List<Exception> doInStatement(Statement statement) throws SQLException {
-        for(JdbcDriverSupport support : SUPPORTED_DRIVERS) {
-            if(support.accept(statement)) {
+        for (JdbcDriverSupport support : SUPPORTED_DRIVERS) {
+            if (support.accept(statement)) {
                 support.doWithStatement(statement, this.inputStream);
                 statement.execute(loadInfileSql);
                 return extractWarnings(statement.getWarnings());
@@ -71,7 +71,7 @@ public class InfileStatementCallback implements JdbcUtil.StatementCallback<List<
      */
     private List<Exception> extractWarnings(SQLWarning warning) {
         List<Exception> warnings = new ArrayList<Exception>(1000);
-        while(warning != null) {
+        while (warning != null) {
             warnings.add(warning);
             warning = warning.getNextWarning();
         }

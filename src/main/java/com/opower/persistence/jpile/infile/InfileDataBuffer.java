@@ -23,14 +23,14 @@ import static com.google.common.collect.ImmutableSet.of;
  * A buffer used to collect data in MySQL's infile format. This buffer also maintains a separate row buffer
  * and implements methods to allow clients to clear and append various data types to said row. These methods insert
  * field and line separators as needed as well as provide proper formats for declaring date and null values.
- * <p>
+ * <p/>
  * When the current row is complete, it can be added to the infile buffer via {@link #addRowToInfile()}. If the row
  * does not fit into the infile buffer, none of its contents are added. To make room, clients should read the contents
  * of the infile buffer with {@link #asInputStream()} and then clear it. In general,clients should consider implementing
  * an {@link com.opower.persistence.jpile.loader.InfileObjectLoader} to manage infile buffers. That class provides higher
  * level interaction and
  * management of these buffers.
- * <p>
+ * <p/>
  * Instances of this class are not safe for use by multiple threads.
  *
  * @author Sean-Michael
@@ -112,10 +112,10 @@ public class InfileDataBuffer implements InfileRow {
      */
     public boolean addRowToInfile() {
         boolean addNewline = this.infileBuffer.position() > 0;
-        if(this.infileBuffer.remaining() < (this.rowBuffer.position() + (addNewline ? this.newlineBytes.length : 0))) {
+        if (this.infileBuffer.remaining() < (this.rowBuffer.position() + (addNewline ? this.newlineBytes.length : 0))) {
             return false;
         }
-        if(addNewline) {
+        if (addNewline) {
             this.infileBuffer.put(this.newlineBytes);
         }
         this.rowBuffer.flip();
@@ -154,7 +154,7 @@ public class InfileDataBuffer implements InfileRow {
      * Appends an encoded tab ('\t') character if current row has any data in it. Otherwise, it does nothing.
      */
     private void appendTabIfNeeded() {
-        if(this.rowBuffer.position() > 0) {
+        if (this.rowBuffer.position() > 0) {
             this.rowBuffer.put(this.tabBytes);
         }
     }
@@ -175,14 +175,14 @@ public class InfileDataBuffer implements InfileRow {
     @Override
     public final InfileRow append(byte[] bytes) {
         this.appendTabIfNeeded();
-        for(byte b : bytes) {
+        for (byte b : bytes) {
             appendByte(b);
         }
         return this;
     }
 
     private void appendByte(byte b) {
-        if(BYTES_NEEDING_ESCAPING.contains(b)) {
+        if (BYTES_NEEDING_ESCAPING.contains(b)) {
             this.rowBuffer.put((byte) MYSQL_ESCAPE_CHAR);
         }
         this.rowBuffer.put(b);
@@ -193,7 +193,7 @@ public class InfileDataBuffer implements InfileRow {
      */
     @Override
     public final InfileRow append(String s) {
-        if(s == null) {
+        if (s == null) {
             return this.appendNull();
         }
         this.appendTabIfNeeded();
@@ -201,11 +201,11 @@ public class InfileDataBuffer implements InfileRow {
         // we escape it.
         String escapedStr = s.replace(MYSQL_ESCAPED_STRING, ESCAPED_MYSQL_ESCAPE_STRING);
         CoderResult result = this.encoder.encode(CharBuffer.wrap(escapedStr), this.rowBuffer, false);
-        if(!result.isUnderflow()) {
+        if (!result.isUnderflow()) {
             try {
                 result.throwException();
             }
-            catch(CharacterCodingException e) {
+            catch (CharacterCodingException e) {
                 throw new Error(e);
             }
         }

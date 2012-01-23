@@ -110,14 +110,14 @@ public class SingleInfileObjectLoaderBuilder<E> {
         objectLoader.persistenceAnnotationInspector = persistenceAnnotationInspector;
         objectLoader.allowNull = allowNull;
         objectLoader.embedChild = embedded;
-        if(defaultTableName) {
+        if (defaultTableName) {
             this.tableName = secondaryTable != null
-                    ? secondaryTable.name()
-                    : persistenceAnnotationInspector.tableName(aClass);
+                             ? secondaryTable.name()
+                             : persistenceAnnotationInspector.tableName(aClass);
         }
         Preconditions.checkNotNull(tableName, "tableName cannot be null");
         this.findAnnotations(objectLoader);
-        if(!embedded) {
+        if (!embedded) {
             this.findPrimaryId(objectLoader);
             this.generateLoadInfileSql(objectLoader);
         }
@@ -128,38 +128,38 @@ public class SingleInfileObjectLoaderBuilder<E> {
 
     private void findAnnotations(SingleInfileObjectLoader<E> objectLoader) {
         // Finds all columns that are annotated with @Column
-        for(PersistenceAnnotationInspector.AnnotatedMethod<Column> annotatedMethod
+        for (PersistenceAnnotationInspector.AnnotatedMethod<Column> annotatedMethod
                 : persistenceAnnotationInspector.annotatedMethodsWith(aClass, Column.class)) {
 
             Preconditions.checkState(!annotatedMethod.getAnnotation().name().isEmpty(),
                                      "@Column.name is not found on method [%s]",
                                      annotatedMethod.getMethod());
             Column column = annotatedMethod.getAnnotation();
-            if(secondaryTable != null) {
-                if(column.table().equals(this.tableName)) {
+            if (secondaryTable != null) {
+                if (column.table().equals(this.tableName)) {
                     objectLoader.mappings.put(annotatedMethod.getAnnotation().name(), annotatedMethod.getMethod());
                 }
             }
-            else if(column.table().isEmpty() || column.table().equals(this.tableName)) {
+            else if (column.table().isEmpty() || column.table().equals(this.tableName)) {
                 objectLoader.mappings.put(annotatedMethod.getAnnotation().name(), annotatedMethod.getMethod());
             }
         }
 
 
         // Ignore all these when using secondary table
-        if(secondaryTable == null) {
+        if (secondaryTable == null) {
             // Finds all one to one columns with @OneToOne
             // Finds all columns with @ManyToOne
             // If @JoinColumn is not there then there is nothing to write
-            for(PersistenceAnnotationInspector.AnnotatedMethod<JoinColumn> annotatedMethod
+            for (PersistenceAnnotationInspector.AnnotatedMethod<JoinColumn> annotatedMethod
                     : persistenceAnnotationInspector.annotatedMethodsWith(aClass, JoinColumn.class)) {
-                if(persistenceAnnotationInspector.hasAnnotation(annotatedMethod.getMethod(), ManyToOne.class)
-                   || persistenceAnnotationInspector.hasAnnotation(annotatedMethod.getMethod(), OneToOne.class)) {
+                if (persistenceAnnotationInspector.hasAnnotation(annotatedMethod.getMethod(), ManyToOne.class)
+                    || persistenceAnnotationInspector.hasAnnotation(annotatedMethod.getMethod(), OneToOne.class)) {
                     objectLoader.mappings.put(annotatedMethod.getAnnotation().name(), annotatedMethod.getMethod());
                 }
             }
             // Finds all columns with @Embedded
-            for(PersistenceAnnotationInspector.AnnotatedMethod<Embedded> annotatedMethod
+            for (PersistenceAnnotationInspector.AnnotatedMethod<Embedded> annotatedMethod
                     : persistenceAnnotationInspector.annotatedMethodsWith(aClass, Embedded.class)) {
                 Method method = annotatedMethod.getMethod();
                 @SuppressWarnings("unchecked")
@@ -183,12 +183,12 @@ public class SingleInfileObjectLoaderBuilder<E> {
         Preconditions.checkNotNull(format("Primary id with @Id annotation is not found on [%s]", aClass), primaryIdGetter);
         Column column = persistenceAnnotationInspector.findAnnotation(primaryIdGetter, Column.class);
         String name = persistenceAnnotationInspector.fieldFromGetter(primaryIdGetter).getName();
-        if(secondaryTable != null) {
+        if (secondaryTable != null) {
             PrimaryKeyJoinColumn[] primaryKeyJoinColumns = secondaryTable.pkJoinColumns();
             Preconditions.checkState(primaryKeyJoinColumns.length == 1, "There needs to be one pkJoinColumns");
             name = primaryKeyJoinColumns[0].name();
         }
-        else if(column != null && !column.name().isEmpty()) {
+        else if (column != null && !column.name().isEmpty()) {
             name = column.name();
         }
         objectLoader.mappings.put(name, primaryIdGetter);
@@ -206,9 +206,9 @@ public class SingleInfileObjectLoaderBuilder<E> {
         List<String> columns = newArrayList();
 
         // Look for byte[] and update the sql to have unhex function
-        for(Map.Entry<String, Method> entry : objectLoader.getMappings().entrySet()) {
+        for (Map.Entry<String, Method> entry : objectLoader.getMappings().entrySet()) {
             Class type = entry.getValue().getReturnType();
-            if(type.isArray() && type.getComponentType() == byte.class) {
+            if (type.isArray() && type.getComponentType() == byte.class) {
                 updates.add(String.format("%1$s=unhex(@hex%1$s)", entry.getKey()));
                 columns.add("@hex" + entry.getKey());
             }
@@ -221,7 +221,7 @@ public class SingleInfileObjectLoaderBuilder<E> {
         builder.append(joiner.join(columns)).append(") ");
 
         // If we had any hex columns then append here
-        if(!updates.isEmpty()) {
+        if (!updates.isEmpty()) {
             builder.append("SET ");
             builder.append(joiner.join(updates));
         }

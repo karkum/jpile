@@ -27,7 +27,7 @@ public class C3P0JdbcDriverSupport implements InfileStatementCallback.JdbcDriver
             // Use Class.forName because we might not have this driver in classpath
             targetInterface = Class.forName("com.mchange.v2.c3p0.C3P0ProxyStatement");
         }
-        catch(ClassNotFoundException e) {
+        catch (ClassNotFoundException e) {
             targetInterface = null;
         }
     }
@@ -44,13 +44,13 @@ public class C3P0JdbcDriverSupport implements InfileStatementCallback.JdbcDriver
             C3P0ProxyStatement proxyStatement = (C3P0ProxyStatement) statement;
             proxyStatement.rawStatementOperation(m, C3P0ProxyStatement.RAW_STATEMENT, new Object[]{inputStream});
         }
-        catch(NoSuchMethodException e) {
+        catch (NoSuchMethodException e) {
             throw Throwables.propagate(e);
         }
-        catch(IllegalAccessException e) {
+        catch (IllegalAccessException e) {
             throw Throwables.propagate(e);
         }
-        catch(InvocationTargetException e) {
+        catch (InvocationTargetException e) {
             throw Throwables.propagate(e);
         }
     }

@@ -74,7 +74,7 @@ public class InfileDataBufferTest {
             infileDataBuffer.addRowToInfile();
             assertEquals(expected, CharStreams.toString(new InputStreamReader(infileDataBuffer.asInputStream())));
         }
-        catch(IOException ex) {
+        catch (IOException ex) {
             throw Throwables.propagate(ex);
         }
     }

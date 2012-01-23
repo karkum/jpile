@@ -67,7 +67,7 @@ public class PersistenceAnnotationInspectorTest {
     public void testMethodsAnnotatedWith() {
         List<PersistenceAnnotationInspector.AnnotatedMethod<Column>> methods =
                 persistenceAnnotationInspector.annotatedMethodsWith(Customer.class, Column.class);
-        for(PersistenceAnnotationInspector.AnnotatedMethod<Column> methodWithAnnotations : methods) {
+        for (PersistenceAnnotationInspector.AnnotatedMethod<Column> methodWithAnnotations : methods) {
             assertNotNull("Must have @Column", methodWithAnnotations.getMethod().getAnnotation(Column.class));
         }
     }

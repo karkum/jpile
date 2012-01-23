@@ -46,7 +46,7 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
         assertEquals(expected.getProducts().size(), products.size());
 
 
-        for(int i = 0, productsSize = expected.getProducts().size(); i < productsSize; i++) {
+        for (int i = 0, productsSize = expected.getProducts().size(); i < productsSize; i++) {
             Product expectedProduct = expected.getProducts().get(i);
             Map<String, Object> actualMap = products.get(i);
             assertEquals(expectedProduct.getId(), actualMap.get("id"));
@@ -62,7 +62,7 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
 
     @Test
     public void testHundredCustomers() {
-        for(int i = 0; i < 100; i++) {
+        for (int i = 0; i < 100; i++) {
             hierarchicalInfileObjectLoader.persist(ObjectFactory.newCustomer());
         }
     }
