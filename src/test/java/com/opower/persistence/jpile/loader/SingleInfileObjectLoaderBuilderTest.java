@@ -8,7 +8,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.io.CharStreams;
 import com.mysql.jdbc.Statement;
 import com.opower.persistence.jpile.infile.InfileDataBuffer;
-import com.opower.persistence.jpile.reflection.CacheablePersistenceAnnotationInspector;
+import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
 import com.opower.persistence.jpile.sample.Customer;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,7 +41,7 @@ public class SingleInfileObjectLoaderBuilderTest {
         objectLoader = new SingleInfileObjectLoaderBuilder<Customer>(Customer.class)
                 .withDefaultTableName()
                 .withJdbcConnection(connection)
-                .usingHibernateBeanUtils(new CacheablePersistenceAnnotationInspector())
+                .usingHibernateBeanUtils(new PersistenceAnnotationInspector())
                 .withBuffer(new InfileDataBuffer())
                 .build();
     }

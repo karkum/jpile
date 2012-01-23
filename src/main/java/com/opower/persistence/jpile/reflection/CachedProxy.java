@@ -1,21 +1,24 @@
 package com.opower.persistence.jpile.reflection;
 
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
+import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyFactory;
+import javassist.util.proxy.ProxyObject;
 
 /**
  * Creates an intermediate proxy object for a given interface. All calls are cached. See
  * <a href="https://github.com/martinus/java-playground/blob/master/src/java/com/ankerl/proxy/CachedProxy.java">CachedProxy</a>
  * for the original idea. An example of usage is:
  * <pre>
- *     MyInterface cached = CachedProxy.create(theImplementation);
+ *     Foo foo = new Foo();
+ *     Foo cachedFoo = CachedProxy.create(foo);
  * </pre>
  *
  * @author Martin Ankerl (martin.ankerl@gmail.at)
@@ -39,7 +42,7 @@ public final class CachedProxy {
 
         @Override
         public boolean equals(final Object obj) {
-            if(obj instanceof Args) {
+            if (obj instanceof Args) {
                 Args other = (Args) obj;
                 return Objects.equal(this.method, other.method) && Arrays.deepEquals(this.args, other.args);
             }
@@ -56,28 +59,48 @@ public final class CachedProxy {
      * Creates an intermediate proxy object that uses cached results if
      * available, otherwise calls the given code.
      *
-     * @param <T>  Type of the class.     
-     * @param impl The actual calculation code that should be cached.
-     * @return The proxy.
+     * @param <T>  Type of the class.
+     * @param impl The actual implementation code that should be cached.
+     * @return The proxy
      */
-    @SuppressWarnings("unchecked")
     public static <T> T create(final T impl) {
-        Class<T> tClass = (Class<T>) impl.getClass();
-        return (T) Proxy.newProxyInstance(tClass.getClassLoader(), tClass.getInterfaces(), new InvocationHandler() {
-            final Cache<Args, Optional> cache = CacheBuilder
-                    .newBuilder()
-                    .softValues()
-                    .build(new CacheLoader<Args, Optional>() {
-                        @Override
-                        public Optional load(Args key) throws Exception {
-                            return Optional.fromNullable(key.method.invoke(impl, key.args));
-                        }
-                    });
+        ProxyFactory factory = new ProxyFactory();
+        factory.setSuperclass(impl.getClass());
+        Class cachedClass = factory.createClass();
+        try {
+            @SuppressWarnings("unchecked")
+            T cachedInstance = (T) cachedClass.newInstance();
+            ((ProxyObject) cachedInstance).setHandler(new MethodHandler() {
+                final Cache<Args, Optional> cache = createCache(impl);
 
-            @Override
-            public Object invoke(final Object proxy, final Method method, final Object[] params) throws Throwable {
-                return this.cache.getUnchecked(new Args(method, params)).orNull();
-            }
-        });
+                /**
+                 * Returns the cached value of this method. If the the method returns null then null is returned.
+                 *
+                 * {@inheritDoc}
+                 */
+                @Override
+                public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
+                    return this.cache.getUnchecked(new Args(thisMethod, args)).orNull();
+                }
+            });
+            return cachedInstance;
+        }
+        catch (InstantiationException e) {
+            throw Throwables.propagate(e);
+        }
+        catch (IllegalAccessException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    private static Cache<Args, Optional> createCache(final Object impl) {
+        return CacheBuilder.newBuilder()
+                           .softValues()
+                           .build(new CacheLoader<Args, Optional>() {
+                               @Override
+                               public Optional load(Args key) throws Exception {
+                                   return Optional.fromNullable(key.method.invoke(impl, key.args));
+                               }
+                           });
     }
 }

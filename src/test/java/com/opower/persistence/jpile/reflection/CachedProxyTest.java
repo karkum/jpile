@@ -1,65 +1,66 @@
 package com.opower.persistence.jpile.reflection;
 
 
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * Test caching to make sure it works correctly
  *
  * @author amir.raminfar
  */
-@RunWith(MockitoJUnitRunner.class)
 public class CachedProxyTest {
     private static final String FOO = "foo";
     private static final String BAR = "bar";
 
-    @Mock
-    private MyInterface theImplementation;
+    private MyTestClass theImplementation = new MyTestClass();
+    private MyTestClass cached = CachedProxy.create(theImplementation);
 
-    private MyInterface cached;
-
-    @Before
-    public void setUp() throws Exception {
-        cached = CachedProxy.create(theImplementation);
-    }
 
     @Test
     public void testWithVarArray() {
-        when(theImplementation.doSomethingWithVarParams(1, true, "test")).thenReturn("results!");
-        assertEquals("results!", cached.doSomethingWithVarParams(1, true, "test"));
+        assertEquals(FOO, cached.doSomethingWithVarParams(1, true, "test"));
         cached.doSomethingWithVarParams(1, true, "test"); // Call it again
-        verify(theImplementation, times(1)).doSomethingWithVarParams(1, true, "test");
+        assertEquals(1, theImplementation.doSomethingWithVarParams);
     }
 
     @Test
     public void testWithSingleParam() {
-        when(theImplementation.doSomethingWithObject(FOO)).thenReturn(BAR);
         assertEquals(BAR, cached.doSomethingWithObject(FOO));
         cached.doSomethingWithObject(FOO);
-        verify(theImplementation, times(1)).doSomethingWithObject(FOO);
+        assertEquals(1, theImplementation.doSomethingWithObject);
     }
 
     @Test
     public void testReturningNull() {
-        when(theImplementation.doSomethingWithObject(FOO)).thenReturn(null);
-        assertNull(cached.doSomethingWithObject(FOO));
-        cached.doSomethingWithObject(FOO);
-        verify(theImplementation, times(1)).doSomethingWithObject(FOO);
+        assertNull(cached.returnsNull(FOO));
+        cached.returnsNull(FOO);
+        assertEquals(1, theImplementation.returnsNull);
     }
 
-    private interface MyInterface {
-        Object doSomethingWithVarParams(Object... args);
+    /**
+     * A fake class for testing.
+     */
+    public static class MyTestClass {
+        int doSomethingWithVarParams = 0;
+        int doSomethingWithObject = 0;
+        int returnsNull = 0;
 
-        Object doSomethingWithObject(Object o);
+        Object doSomethingWithVarParams(Object... args) {
+            doSomethingWithVarParams++;
+            return FOO;
+        }
+
+        Object doSomethingWithObject(Object o) {
+            doSomethingWithObject++;
+            return BAR;
+        }
+
+        Object returnsNull(Object... args) {
+            returnsNull++;
+            return null;
+        }
     }
 }

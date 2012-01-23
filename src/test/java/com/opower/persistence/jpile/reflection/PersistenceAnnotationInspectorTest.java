@@ -24,8 +24,8 @@ import static org.junit.Assert.assertTrue;
  *
  * @author amir.raminfar
  */
-public class CacheablePersistenceAnnotationInspectorTest {
-    private PersistenceAnnotationInspector persistenceAnnotationInspector = new CacheablePersistenceAnnotationInspector();
+public class PersistenceAnnotationInspectorTest {
+    private PersistenceAnnotationInspector persistenceAnnotationInspector = new PersistenceAnnotationInspector();
 
     @Test
     public void testHasTableAnnotation() throws Exception {

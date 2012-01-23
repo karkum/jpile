@@ -19,8 +19,8 @@ import static com.google.common.base.Throwables.propagate;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.collect.Maps.newTreeMap;
 import static com.google.common.collect.Sets.newLinkedHashSet;
-import static com.opower.persistence.jpile.reflection.CacheablePersistenceAnnotationInspector.getIdValue;
-import static com.opower.persistence.jpile.reflection.CacheablePersistenceAnnotationInspector.setIdValue;
+import static com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector.getIdValue;
+import static com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector.setIdValue;
 import static com.opower.persistence.jpile.util.Hex.encodeHexString;
 
 /**

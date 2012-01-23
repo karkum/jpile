@@ -21,9 +21,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.opower.persistence.jpile.infile.InfileDataBuffer;
-import com.opower.persistence.jpile.reflection.CacheablePersistenceAnnotationInspector;
-import com.opower.persistence.jpile.reflection.CachedProxy;
 import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
+import com.opower.persistence.jpile.reflection.CachedProxy;
 import com.opower.persistence.jpile.util.JdbcUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +59,7 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
     private static Logger logger = LoggerFactory.getLogger(HierarchicalInfileObjectLoader.class);
 
     private PersistenceAnnotationInspector persistenceAnnotationInspector =
-            CachedProxy.create(new CacheablePersistenceAnnotationInspector());
+            CachedProxy.create(new PersistenceAnnotationInspector());
 
     private CallBack eventCallback = new NoOpCallBack();
     private Connection connection;
@@ -124,7 +123,7 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
         callOnAfterEvent(entity);
 
         // Get generated id
-        Object id = CacheablePersistenceAnnotationInspector.getIdValue(persistenceAnnotationInspector, entity);
+        Object id = PersistenceAnnotationInspector.getIdValue(persistenceAnnotationInspector, entity);
 
         // Find all objects that depend entity's id being generated and save these now
         for(Method dependent : parentDependent.get(entity.getClass())) {
@@ -136,7 +135,7 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
                     }
                 }
                 else {
-                    CacheablePersistenceAnnotationInspector.setIdValue(persistenceAnnotationInspector, o, id);
+                    PersistenceAnnotationInspector.setIdValue(persistenceAnnotationInspector, o, id);
                     persistWithCyclicCheck(o, cyclicCheck);
                 }
             }
