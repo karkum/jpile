@@ -25,48 +25,57 @@ import static org.junit.Assert.assertTrue;
  * @author amir.raminfar
  */
 public class PersistenceAnnotationInspectorTest {
-    private PersistenceAnnotationInspector persistenceAnnotationInspector = new PersistenceAnnotationInspector();
+    private PersistenceAnnotationInspector annotationInspector = new PersistenceAnnotationInspector();
 
     @Test
     public void testHasTableAnnotation() throws Exception {
-        assertTrue(persistenceAnnotationInspector.hasTableAnnotation(Customer.class));
-        assertTrue(persistenceAnnotationInspector.hasTableAnnotation(Product.class));
+        assertTrue(annotationInspector.hasTableAnnotation(Customer.class));
+        assertTrue(annotationInspector.hasTableAnnotation(Product.class));
     }
 
     @Test
     public void testTableName() throws Exception {
-        assertEquals("customer", persistenceAnnotationInspector.tableName(Customer.class));
-        assertEquals("product", persistenceAnnotationInspector.tableName(Product.class));
+        assertEquals("customer", annotationInspector.tableName(Customer.class));
+        assertEquals("product", annotationInspector.tableName(Product.class));
     }
 
     @Test
     public void testSecondaryTable() throws Exception {
-        assertNull(persistenceAnnotationInspector.secondaryTable(Customer.class));
+        assertNull(annotationInspector.secondaryTable(Customer.class));
     }
 
     @Test
     public void testIdGetter() throws Exception {
-        assertEquals("getId", persistenceAnnotationInspector.idGetter(Customer.class).getName());
+        assertEquals("getId", annotationInspector.idGetter(Customer.class).getName());
     }
 
     @Test
     public void testSetterFromGetter() throws Exception {
-        assertEquals("setId", persistenceAnnotationInspector.setterFromGetter(
-                persistenceAnnotationInspector.idGetter(Customer.class)).getName()
+        assertEquals(
+                Customer.class.getMethod("setId", Long.class),
+                annotationInspector.setterFromGetter(Customer.class.getMethod("getId"))
+        );
+    }
+
+    @Test
+    public void testGetterFromSetter() throws Exception {
+        assertEquals(
+                Customer.class.getMethod("getId"),
+                annotationInspector.getterFromSetter(Customer.class.getMethod("setId", Long.class))
         );
     }
 
     @Test
     public void testFieldFromGetter() throws Exception {
-        assertEquals("id", persistenceAnnotationInspector.fieldFromGetter(
-                persistenceAnnotationInspector.idGetter(Customer.class)).getName()
+        assertEquals("id", annotationInspector.fieldFromGetter(
+                annotationInspector.idGetter(Customer.class)).getName()
         );
     }
 
     @Test
     public void testMethodsAnnotatedWith() {
         List<PersistenceAnnotationInspector.AnnotatedMethod<Column>> methods =
-                persistenceAnnotationInspector.annotatedMethodsWith(Customer.class, Column.class);
+                annotationInspector.annotatedMethodsWith(Customer.class, Column.class);
         for (PersistenceAnnotationInspector.AnnotatedMethod<Column> methodWithAnnotations : methods) {
             assertNotNull("Must have @Column", methodWithAnnotations.getMethod().getAnnotation(Column.class));
         }
@@ -74,7 +83,7 @@ public class PersistenceAnnotationInspectorTest {
 
     @Test
     public void testMethodsWithMultipleAnnotations() {
-        List<Method> methods = persistenceAnnotationInspector.methodsAnnotatedWith(
+        List<Method> methods = annotationInspector.methodsAnnotatedWith(
                 Customer.class, OneToOne.class, PrimaryKeyJoinColumn.class
         );
         assertEquals(1, methods.size());
@@ -83,19 +92,19 @@ public class PersistenceAnnotationInspectorTest {
 
     @Test
     public void testFindAnnotation() {
-        assertNotNull(persistenceAnnotationInspector.findAnnotation(Customer.class, Table.class));
+        assertNotNull(annotationInspector.findAnnotation(Customer.class, Table.class));
     }
 
     @Test
     public void testHasAnnotation() {
-        assertTrue(persistenceAnnotationInspector.hasAnnotation(Customer.class, Entity.class));
+        assertTrue(annotationInspector.hasAnnotation(Customer.class, Entity.class));
     }
 
     @Test
     public void testFindSecondaryTableAnnotations() throws Exception {
         assertEquals(
                 copyOf(Contact.class.getAnnotation(SecondaryTables.class).value()),
-                persistenceAnnotationInspector.findSecondaryTables(Contact.class)
+                annotationInspector.findSecondaryTables(Contact.class)
         );
     }
 }

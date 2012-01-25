@@ -39,20 +39,6 @@ public abstract class InfileObjectLoader<E> implements Flushable {
     private List<Exception> warnings;
 
     /**
-     * Creates a loader with a template for executing JDBC call, an infile SQL statement, and a data buffer.
-     *
-     * @param connection       to provide access to JDBC operations
-     * @param loadInfileSql    to execute
-     * @param infileDataBuffer containing binary row data
-     */
-    public InfileObjectLoader(Connection connection, String loadInfileSql, InfileDataBuffer infileDataBuffer) {
-        this.connection = connection;
-        this.loadInfileSql = loadInfileSql;
-        this.infileDataBuffer = infileDataBuffer;
-        this.infileDataBuffer.reset();
-    }
-
-    /**
      * For subclasses to extend correctly
      */
     protected InfileObjectLoader() {

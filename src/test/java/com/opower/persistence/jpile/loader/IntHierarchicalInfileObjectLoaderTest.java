@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import com.google.common.collect.ImmutableSet;
 import com.opower.persistence.jpile.AbstractIntTestForJPile;
 import com.opower.persistence.jpile.sample.Customer;
 import com.opower.persistence.jpile.sample.Data;
@@ -17,7 +18,11 @@ import org.junit.Test;
 import org.springframework.jdbc.core.RowMapper;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * Tests object loader for correctness
@@ -90,6 +95,28 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
         });
 
         assertTrue(Arrays.equals(md5, actual.getMd5()));
+    }
+
+    @Test
+    public void testIgnore() {
+        hierarchicalInfileObjectLoader.setClassesToIgnore(ImmutableSet.<Class>of(Customer.class));
+
+        Customer customer = new Customer();
+        hierarchicalInfileObjectLoader.persist(customer);
+
+        assertNull(customer.getId());
+    }
+
+    @Test
+    public void testEventCallback() {
+        HierarchicalInfileObjectLoader.CallBack callBack = mock(HierarchicalInfileObjectLoader.CallBack.class);
+        hierarchicalInfileObjectLoader.setEventCallback(callBack);
+
+        Customer customer = new Customer();
+        hierarchicalInfileObjectLoader.persist(customer);
+
+        verify(callBack, times(1)).onBeforeSave(customer);
+        verify(callBack, times(1)).onAfterSave(customer);
     }
 
     private byte[] toMd5(String s) throws NoSuchAlgorithmException {
