@@ -1,5 +1,6 @@
 package com.opower.persistence.jpile.reflection;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import com.google.common.base.Objects;
@@ -37,7 +38,7 @@ public final class CachedProxy {
 
         public Args(final Method method, final Object[] args) {
             this.method = method;
-            this.args = args;
+            this.args = Arrays.copyOf(args, args.length);
         }
 
         @Override
@@ -79,7 +80,7 @@ public final class CachedProxy {
                  * {@inheritDoc}
                  */
                 @Override
-                public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
+                public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) {
                     return this.cache.getUnchecked(new Args(thisMethod, args)).orNull();
                 }
             });
@@ -98,7 +99,7 @@ public final class CachedProxy {
                            .softValues()
                            .build(new CacheLoader<Args, Optional>() {
                                @Override
-                               public Optional load(Args key) throws Exception {
+                               public Optional load(Args key) throws InvocationTargetException, IllegalAccessException {
                                    return Optional.fromNullable(key.method.invoke(impl, key.args));
                                }
                            });
