@@ -41,7 +41,7 @@ public class SingleInfileObjectLoaderBuilderTest {
         objectLoader = new SingleInfileObjectLoaderBuilder<Customer>(Customer.class)
                 .withDefaultTableName()
                 .withJdbcConnection(connection)
-                .usingHibernateBeanUtils(new PersistenceAnnotationInspector())
+                .usingAnnotationInspector(new PersistenceAnnotationInspector())
                 .withBuffer(new InfileDataBuffer())
                 .build();
     }

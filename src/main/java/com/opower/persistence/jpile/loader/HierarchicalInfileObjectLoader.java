@@ -80,7 +80,7 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
      * @param moreObjects optional more objects
      */
     public void persist(Object firstObject, Object... moreObjects) {
-        Preconditions.checkNotNull("Connection is null, did you call setConnection()?", connection);
+        Preconditions.checkNotNull(connection, "Connection is null, did you call setConnection()?");
         for (Object o : concat(of(firstObject), copyOf(moreObjects))) {
             persistWithCyclicCheck(o, new HashSet<Object>());
         }
@@ -170,7 +170,7 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
                 .withBuffer(newInfileDataBuffer())
                 .withDefaultTableName()
                 .withJdbcConnection(connection)
-                .usingHibernateBeanUtils(persistenceAnnotationInspector)
+                .usingAnnotationInspector(persistenceAnnotationInspector)
                 .build();
 
         primaryObjectLoaders.put(aClass, primaryLoader);
@@ -184,7 +184,7 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
                         .withDefaultTableName()
                         .usingSecondaryTable(secondaryTable)
                         .withJdbcConnection(connection)
-                        .usingHibernateBeanUtils(persistenceAnnotationInspector)
+                        .usingAnnotationInspector(persistenceAnnotationInspector)
                         .build();
 
                 secondaryTableObjectLoaders.put(aClass, secondaryLoader);

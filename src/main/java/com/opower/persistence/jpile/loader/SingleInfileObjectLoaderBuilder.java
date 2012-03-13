@@ -19,7 +19,6 @@ import com.opower.persistence.jpile.infile.InfileDataBuffer;
 import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static java.lang.String.format;
 
 
 /**
@@ -33,7 +32,7 @@ public class SingleInfileObjectLoaderBuilder<E> {
     private Class<E> aClass;
     private Connection connection;
     private InfileDataBuffer infileDataBuffer;
-    private PersistenceAnnotationInspector persistenceAnnotationInspector;
+    private PersistenceAnnotationInspector annotationInspector;
     private String tableName;
     private boolean defaultTableName = false;
     private boolean allowNull = false;
@@ -56,9 +55,8 @@ public class SingleInfileObjectLoaderBuilder<E> {
         return this;
     }
 
-    public SingleInfileObjectLoaderBuilder<E> usingHibernateBeanUtils(
-            PersistenceAnnotationInspector persistenceAnnotationInspector) {
-        this.persistenceAnnotationInspector = persistenceAnnotationInspector;
+    public SingleInfileObjectLoaderBuilder<E> usingAnnotationInspector(PersistenceAnnotationInspector annotationInspector) {
+        this.annotationInspector = annotationInspector;
         return this;
     }
 
@@ -101,19 +99,17 @@ public class SingleInfileObjectLoaderBuilder<E> {
      */
     public SingleInfileObjectLoader<E> build() {
         Preconditions.checkNotNull(connection, "connection cannot be null");
-        Preconditions.checkNotNull(persistenceAnnotationInspector, "persistenceAnnotationInspector cannot be null");
+        Preconditions.checkNotNull(annotationInspector, "persistenceAnnotationInspector cannot be null");
         Preconditions.checkNotNull(infileDataBuffer, "infileDataBuffer cannot be null");
 
         SingleInfileObjectLoader<E> objectLoader = new SingleInfileObjectLoader<E>(aClass);
         objectLoader.connection = connection;
         objectLoader.infileDataBuffer = infileDataBuffer;
-        objectLoader.persistenceAnnotationInspector = persistenceAnnotationInspector;
+        objectLoader.persistenceAnnotationInspector = annotationInspector;
         objectLoader.allowNull = allowNull;
         objectLoader.embedChild = embedded;
         if (defaultTableName) {
-            this.tableName = secondaryTable != null
-                             ? secondaryTable.name()
-                             : persistenceAnnotationInspector.tableName(aClass);
+            this.tableName = secondaryTable != null ? secondaryTable.name() : annotationInspector.tableName(aClass);
         }
         Preconditions.checkNotNull(tableName, "tableName cannot be null");
         this.findAnnotations(objectLoader);
@@ -129,7 +125,7 @@ public class SingleInfileObjectLoaderBuilder<E> {
     private void findAnnotations(SingleInfileObjectLoader<E> objectLoader) {
         // Finds all columns that are annotated with @Column
         for (PersistenceAnnotationInspector.AnnotatedMethod<Column> annotatedMethod
-                : persistenceAnnotationInspector.annotatedMethodsWith(aClass, Column.class)) {
+                : annotationInspector.annotatedMethodsWith(aClass, Column.class)) {
 
             Preconditions.checkState(!annotatedMethod.getAnnotation().name().isEmpty(),
                                      "@Column.name is not found on method [%s]",
@@ -152,15 +148,15 @@ public class SingleInfileObjectLoaderBuilder<E> {
             // Finds all columns with @ManyToOne
             // If @JoinColumn is not there then there is nothing to write
             for (PersistenceAnnotationInspector.AnnotatedMethod<JoinColumn> annotatedMethod
-                    : persistenceAnnotationInspector.annotatedMethodsWith(aClass, JoinColumn.class)) {
-                if (persistenceAnnotationInspector.hasAnnotation(annotatedMethod.getMethod(), ManyToOne.class)
-                    || persistenceAnnotationInspector.hasAnnotation(annotatedMethod.getMethod(), OneToOne.class)) {
+                    : annotationInspector.annotatedMethodsWith(aClass, JoinColumn.class)) {
+                if (annotationInspector.hasAnnotation(annotatedMethod.getMethod(), ManyToOne.class)
+                    || annotationInspector.hasAnnotation(annotatedMethod.getMethod(), OneToOne.class)) {
                     objectLoader.mappings.put(annotatedMethod.getAnnotation().name(), annotatedMethod.getMethod());
                 }
             }
             // Finds all columns with @Embedded
             for (PersistenceAnnotationInspector.AnnotatedMethod<Embedded> annotatedMethod
-                    : persistenceAnnotationInspector.annotatedMethodsWith(aClass, Embedded.class)) {
+                    : annotationInspector.annotatedMethodsWith(aClass, Embedded.class)) {
                 Method method = annotatedMethod.getMethod();
                 @SuppressWarnings("unchecked")
                 SingleInfileObjectLoader<Object> embededObjectLoader
@@ -169,7 +165,7 @@ public class SingleInfileObjectLoaderBuilder<E> {
                         .withDefaultTableName()
                         .withJdbcConnection(connection)
                         .withTableName(tableName)
-                        .usingHibernateBeanUtils(persistenceAnnotationInspector)
+                        .usingAnnotationInspector(annotationInspector)
                         .allowNull()
                         .isEmbedded()
                         .build();
@@ -179,23 +175,24 @@ public class SingleInfileObjectLoaderBuilder<E> {
     }
 
     private void findPrimaryId(SingleInfileObjectLoader<E> objectLoader) {
-        Method primaryIdGetter = persistenceAnnotationInspector.idGetter(aClass);
-        Preconditions.checkNotNull(format("Primary id with @Id annotation is not found on [%s]", aClass), primaryIdGetter);
-        Column column = persistenceAnnotationInspector.findAnnotation(primaryIdGetter, Column.class);
-        String name = persistenceAnnotationInspector.fieldFromGetter(primaryIdGetter).getName();
-        if (secondaryTable != null) {
-            PrimaryKeyJoinColumn[] primaryKeyJoinColumns = secondaryTable.pkJoinColumns();
-            Preconditions.checkState(primaryKeyJoinColumns.length == 1, "There needs to be one pkJoinColumns");
-            name = primaryKeyJoinColumns[0].name();
+        Method primaryIdGetter = annotationInspector.idGetter(aClass);
+        if (primaryIdGetter != null) {
+            Column column = annotationInspector.findAnnotation(primaryIdGetter, Column.class);
+            String name = annotationInspector.fieldFromGetter(primaryIdGetter).getName();
+            if (secondaryTable != null) {
+                PrimaryKeyJoinColumn[] primaryKeyJoinColumns = secondaryTable.pkJoinColumns();
+                Preconditions.checkState(primaryKeyJoinColumns.length == 1, "There needs to be one pkJoinColumns");
+                name = primaryKeyJoinColumns[0].name();
+            }
+            else if (column != null && !column.name().isEmpty()) {
+                name = column.name();
+            }
+            objectLoader.mappings.put(name, primaryIdGetter);
+            GeneratedValue generatedValue = annotationInspector.findAnnotation(primaryIdGetter, GeneratedValue.class);
+            objectLoader.autoGenerateId = secondaryTable == null
+                                          && generatedValue != null
+                                          && generatedValue.strategy() == GenerationType.AUTO;
         }
-        else if (column != null && !column.name().isEmpty()) {
-            name = column.name();
-        }
-        objectLoader.mappings.put(name, primaryIdGetter);
-        GeneratedValue generatedValue = persistenceAnnotationInspector.findAnnotation(primaryIdGetter, GeneratedValue.class);
-        objectLoader.autoGenerateId = secondaryTable == null
-                                      && generatedValue != null
-                                      && generatedValue.strategy() == GenerationType.AUTO;
     }
 
     private void generateLoadInfileSql(SingleInfileObjectLoader<E> objectLoader) {
