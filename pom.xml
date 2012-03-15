@@ -15,7 +15,7 @@
     </description>
     <groupId>com.opower</groupId>
     <artifactId>jpile</artifactId>
-    <version>1.3</version>
+    <version>1.4-SNAPSHOT</version>
     <url>https://github.com/opower/jpile</url>
 
     <licenses>
