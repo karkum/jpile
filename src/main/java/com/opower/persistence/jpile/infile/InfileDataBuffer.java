@@ -45,7 +45,7 @@ public class InfileDataBuffer implements InfileRow {
     /**
      * Default size in bytes of the row buffer.
      */
-    public static final int DEFAULT_ROW_BUFFER_SIZE = 1024 * 2; // 2kB
+    public static final int DEFAULT_ROW_BUFFER_SIZE = 1024 * 10; // 10kB
 
     // Infile constants
     protected static final char MYSQL_ESCAPE_CHAR = '\\';
