@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import com.google.common.collect.ImmutableSet;
 import com.opower.persistence.jpile.AbstractIntTestForJPile;
+import com.opower.persistence.jpile.sample.Contact;
 import com.opower.persistence.jpile.sample.Customer;
 import com.opower.persistence.jpile.sample.Data;
 import com.opower.persistence.jpile.sample.ObjectFactory;
@@ -117,6 +118,21 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
 
         verify(callBack, times(1)).onBeforeSave(customer);
         verify(callBack, times(1)).onAfterSave(customer);
+    }
+
+    @Test
+    public void testUtf8() {
+        Contact expected = new Contact();
+        expected.setFirstName("\u304C\u3126");
+        expected.setLastName("ががががㄦ");
+
+        hierarchicalInfileObjectLoader.persist(expected);
+        hierarchicalInfileObjectLoader.flush();
+
+        Map<String, Object> actual = simpleJdbcTemplate.queryForMap("select * from contact");
+
+        assertEquals("がㄦ", actual.get("first_name"));
+        assertEquals("ががががㄦ", actual.get("last_name"));
     }
 
     private byte[] toMd5(String s) throws NoSuchAlgorithmException {
