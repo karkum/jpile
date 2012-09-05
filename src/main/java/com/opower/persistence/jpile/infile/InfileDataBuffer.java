@@ -10,6 +10,8 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 import java.util.Date;
 import java.util.Set;
+
+import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -95,7 +97,7 @@ public class InfileDataBuffer implements InfileRow {
     }
 
     public InfileDataBuffer() {
-        this(Charset.defaultCharset());
+        this(Charsets.UTF_8);
     }
 
     /**
