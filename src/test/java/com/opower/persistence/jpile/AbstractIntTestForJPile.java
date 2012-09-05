@@ -20,6 +20,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 public abstract class AbstractIntTestForJPile {
+    private static final String JDBC_URL = "jdbc:mysql://localhost/jpile?useUnicode=true&characterEncoding=utf-8";
     static {
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -35,7 +36,7 @@ public abstract class AbstractIntTestForJPile {
 
     @Before
     public void setUp() throws Exception {
-        connection = DriverManager.getConnection("jdbc:mysql://localhost/jpile", "root", "");
+        connection = DriverManager.getConnection(JDBC_URL, "root", "");
         hierarchicalInfileObjectLoader.setConnection(connection);
         simpleJdbcTemplate = new SimpleJdbcTemplate(new SingleConnectionDataSource(connection, true));
     }
