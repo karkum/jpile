@@ -124,6 +124,7 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
     public void testUtf8() {
         Contact expected = new Contact();
         expected.setFirstName("\u304C\u3126");
+        expected.setLastName("ががががㄦ");
 
         hierarchicalInfileObjectLoader.persist(expected);
         hierarchicalInfileObjectLoader.flush();
@@ -131,6 +132,7 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
         Map<String, Object> actual = simpleJdbcTemplate.queryForMap("select * from contact");
 
         assertEquals("がㄦ", actual.get("first_name"));
+        assertEquals("ががががㄦ", actual.get("last_name"));
     }
 
     private byte[] toMd5(String s) throws NoSuchAlgorithmException {
