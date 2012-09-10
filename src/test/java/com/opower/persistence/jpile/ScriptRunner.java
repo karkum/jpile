@@ -19,7 +19,7 @@ public class ScriptRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(ScriptRunner.class);
     private static final String DEFAULT_DELIMITER = ";";
 
-    private Connection connection;
+    private final Connection connection;
     private String delimiter = DEFAULT_DELIMITER;
 
 
