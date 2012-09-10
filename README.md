@@ -29,9 +29,9 @@ jPile cannot rely on MySQL `auto_generated` option. Typical database operation s
 
 # How do I run the tests?
 
-jPile needs a local MySQL running and Apache Maven. Create a new database schema called 'jpile' using `CREATE DATABASE jpile CHARACTER SET utf8 COLLATE utf8_general_ci`. The test classes use `root` with no password to login. After creating the local database, you should be able to run `mvn clean install` to run all the tests and install locally.
+jPile needs a local MySQL running and Apache Maven. Create a new database schema called 'jpile' using `CREATE DATABASE jpile CHARACTER SET utf8 COLLATE utf8_general_ci`. The test classes use `root` with no password to login. The username and password is located in `AbstractIntTestForJPile` class. 
 
-All test cases will automatically create and drop the required tables for integration tests.
+All test cases will automatically create and drop the required tables for integration tests. After creating the local database, you should be able to run `mvn clean install` to run all the tests and install locally.
 
 # What do I do if I find a bug?
 
