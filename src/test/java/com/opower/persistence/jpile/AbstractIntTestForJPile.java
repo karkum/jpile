@@ -1,22 +1,21 @@
 package com.opower.persistence.jpile;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.List;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.jdbc.SimpleJdbcTestUtils;
 
 import com.opower.persistence.jpile.loader.HierarchicalInfileObjectLoader;
 
@@ -33,7 +32,7 @@ public abstract class AbstractIntTestForJPile {
     private static final String JDBC_URL = "jdbc:mysql://localhost/jpile?useUnicode=true&characterEncoding=utf-8";
     private static final List<String> TABLES = of("customer", "product", "contact", "contact_phone", "binary_data");
     public static final String DB_USER = "root";
-    public static final String DB_PASSOWRD = "";
+    public static final String DB_PASSWORD = "";
 
     static {
         try {
@@ -50,11 +49,13 @@ public abstract class AbstractIntTestForJPile {
 
     @BeforeClass
     public static void createTables() throws Exception {
-        Connection connection = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASSOWRD);
-        ScriptRunner scriptRunner = new ScriptRunner(connection);
-        Reader reader = new InputStreamReader(AbstractIntTestForJPile.class.getResourceAsStream("/jpile.sql"), Charsets.UTF_8);
-        scriptRunner.runScript(reader);
-        reader.close();
+        Connection connection = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASSWORD);
+        SimpleJdbcTemplate simpleJdbcTemplate = new SimpleJdbcTemplate(new SingleConnectionDataSource(connection, true));
+        SimpleJdbcTestUtils.executeSqlScript(
+                simpleJdbcTemplate,
+                new InputStreamResource(AbstractIntTestForJPile.class.getResourceAsStream("/jpile.sql")),
+                false
+        );
         connection.close();
     }
 
