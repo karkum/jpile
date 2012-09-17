@@ -12,20 +12,23 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTable;
+
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.opower.persistence.jpile.infile.InfileDataBuffer;
 import com.opower.persistence.jpile.reflection.CachedProxy;
 import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
 import com.opower.persistence.jpile.util.JdbcUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.collect.ImmutableList.copyOf;
@@ -275,7 +278,9 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
     }
 
     /**
-     * Closes all object loaders
+     * Closes all object loaders.
+     * <p/>
+     * Re-enables foreign key checks for the connection.
      */
     @Override
     public void close() {
@@ -283,9 +288,17 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
         logger.debug("Closing all object loaders.");
         primaryObjectLoaders.clear();
         secondaryTableObjectLoaders.clear();
+        JdbcUtil.execute(this.connection, new JdbcUtil.StatementCallback<Boolean>() {
+            @Override
+            public Boolean doInStatement(Statement statement) throws SQLException {
+                return statement.execute("SET FOREIGN_KEY_CHECKS = 1");
+            }
+        });
     }
 
-
+    /**
+     * Disables foreign key checks for this connection by executing {@code SET FOREIGN_KEY_CHECKS = 0}
+     */
     public void setConnection(Connection connection) {
         this.connection = connection;
         JdbcUtil.execute(this.connection, new JdbcUtil.StatementCallback<Boolean>() {
