@@ -1,5 +1,9 @@
 package com.opower.persistence.jpile.reflection;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -154,7 +158,25 @@ public class PersistenceAnnotationInspector {
     }
 
     /**
-     * Finds the setter for a getter by replacing 'get' with 'set'
+     * Gets the property descriptors for a Java Bean.
+     *
+     * @param aClass the class to get the property descriptors of
+     * @return the property descriptors
+     */
+    private static PropertyDescriptor[] getPropertyDescriptors(Class aClass) {
+        BeanInfo beanInfo;
+        try {
+            beanInfo = Introspector.getBeanInfo(aClass);
+        }
+        catch (IntrospectionException e) {
+            return new PropertyDescriptor[0];
+        }
+
+        return beanInfo.getPropertyDescriptors();
+    }
+
+    /**
+     * Finds the setter for a getter by following the JavaBean naming convention, replacing 'is'/'get' with 'set'.
      *
      * @param getter the getter
      * @return the setter if it exists, otherwise null
@@ -162,11 +184,18 @@ public class PersistenceAnnotationInspector {
     public Method setterFromGetter(Method getter) {
         Preconditions.checkNotNull(getter, "Cannot find setter from null getter");
         Class aClass = getter.getDeclaringClass();
-        return ReflectionUtils.findMethod(aClass, getter.getName().replace("get", "set"), getter.getReturnType());
+
+        for (PropertyDescriptor propertyDescriptor : getPropertyDescriptors(aClass)) {
+            if (getter.equals(propertyDescriptor.getReadMethod())) {
+                return propertyDescriptor.getWriteMethod();
+            }
+        }
+
+        return null;
     }
 
     /**
-     * Finds the getter for a setter by replacing 'set' with 'get'
+     * Finds the getter for a setter by following the JavaBean naming convention, replacing 'set' with 'get'/'is'.
      *
      * @param setter the setter
      * @return the getter if it exists, otherwise null
@@ -174,20 +203,48 @@ public class PersistenceAnnotationInspector {
     public Method getterFromSetter(Method setter) {
         Preconditions.checkNotNull(setter, "Cannot find getter from null setter");
         Class aClass = setter.getDeclaringClass();
-        return ReflectionUtils.findMethod(aClass, setter.getName().replace("set", "get"));
+
+        for (PropertyDescriptor propertyDescriptor : getPropertyDescriptors(aClass)) {
+            if (setter.equals(propertyDescriptor.getWriteMethod())) {
+                return propertyDescriptor.getReadMethod();
+            }
+        }
+
+        return null;
     }
 
     /**
-     * Searches for field that matches the getter
+     * Searches for field that matches the getter following JavaBean naming conventions (eg 'getXyz'/'isXyz' corresponds with
+     * the field 'xyz'/'isXyz').
      *
      * @param getter the getter
      * @return the field or null
      */
     public Field fieldFromGetter(Method getter) {
         Class aClass = getter.getDeclaringClass();
-        String fieldName = getter.getName().replaceFirst("get", "");
-        fieldName = Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
-        return ReflectionUtils.findField(aClass, fieldName);
+
+        for (PropertyDescriptor propertyDescriptor : getPropertyDescriptors(aClass)) {
+            if (getter.equals(propertyDescriptor.getReadMethod())) {
+                String propertyName = propertyDescriptor.getName();
+                Class propertyClass = propertyDescriptor.getPropertyType();
+
+                Field field = ReflectionUtils.findField(aClass, propertyName, propertyClass);
+                if (field == null && (propertyClass.equals(boolean.class) || propertyClass.equals(Boolean.class))) {
+                    /*
+                     * Boolean/boolean are treated slightly differently, since 'isXyz'/'getXyz' for booleans can have a
+                     * property name of 'xyz' or 'isXyz'.
+                     */
+                    if (!propertyDescriptor.getName().startsWith("is")) {
+                        String modifiedName = "is" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
+                        field = ReflectionUtils.findField(aClass, modifiedName, propertyClass);
+                    }
+                }
+
+                return field;
+            }
+        }
+
+        return null;
     }
 
     /**
