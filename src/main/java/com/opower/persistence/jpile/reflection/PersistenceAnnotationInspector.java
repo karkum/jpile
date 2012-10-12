@@ -229,12 +229,14 @@ public class PersistenceAnnotationInspector {
                 Class propertyClass = propertyDescriptor.getPropertyType();
 
                 Field field = ReflectionUtils.findField(aClass, propertyName, propertyClass);
-                if (field == null && (propertyClass.equals(boolean.class) || propertyClass.equals(Boolean.class))) {
+
+                if (field == null) {
+                    boolean isBoolean = boolean.class.equals(propertyClass) || Boolean.class.equals(propertyClass);
                     /*
                      * Boolean/boolean are treated slightly differently, since 'isXyz'/'getXyz' for booleans can have a
                      * property name of 'xyz' or 'isXyz'.
                      */
-                    if (!propertyDescriptor.getName().startsWith("is")) {
+                    if (!propertyDescriptor.getName().startsWith("is") && isBoolean) {
                         String modifiedName = "is" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
                         field = ReflectionUtils.findField(aClass, modifiedName, propertyClass);
                     }
