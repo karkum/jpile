@@ -107,4 +107,76 @@ public class PersistenceAnnotationInspectorTest {
                 annotationInspector.findSecondaryTables(Contact.class)
         );
     }
+
+    @Test
+    public void testGetterFromSetterWithGetBoolean() throws Exception {
+        assertEquals(
+                JavaBeanBoolean.class.getMethod("getA"),
+                annotationInspector.getterFromSetter(JavaBeanBoolean.class.getMethod("setA", boolean.class))
+        );
+    }
+
+    @Test
+    public void testGetterFromSetterWithIsBoolean() throws Exception {
+        assertEquals(
+                JavaBeanBoolean.class.getMethod("isB"),
+                annotationInspector.getterFromSetter(JavaBeanBoolean.class.getMethod("setB", boolean.class))
+        );
+    }
+
+    @Test
+    public void testSetterFromGetterWithGetBoolean() throws Exception {
+        assertEquals(
+                JavaBeanBoolean.class.getMethod("setA", boolean.class),
+                annotationInspector.setterFromGetter(JavaBeanBoolean.class.getMethod("getA"))
+        );
+    }
+
+    @Test
+    public void testSetterFromGetterWithIsBoolean() throws Exception {
+        assertEquals(
+                JavaBeanBoolean.class.getMethod("setB", boolean.class),
+                annotationInspector.setterFromGetter(JavaBeanBoolean.class.getMethod("isB"))
+        );
+    }
+
+    @Test
+    public void testFieldFromGetterWithGetBoolean() throws Exception {
+        assertEquals(
+                "isA",
+                annotationInspector.fieldFromGetter(JavaBeanBoolean.class.getMethod("getA")).getName()
+        );
+    }
+
+    @Test
+    public void testFieldFromGetterWithIsBoolean() throws Exception {
+        assertEquals(
+                "isB",
+                annotationInspector.fieldFromGetter(JavaBeanBoolean.class.getMethod("isB")).getName()
+        );
+    }
+
+    /**
+     * A class used to test Java Beans with boolean properties.
+     */
+    private static class JavaBeanBoolean {
+        private boolean isA;
+        private boolean isB;
+
+        public boolean getA() {
+            return isA;
+        }
+
+        public void setA(boolean isA) {
+            this.isA = isA;
+        }
+
+        public boolean isB() {
+            return isB;
+        }
+
+        public void setB(boolean isB) {
+            this.isB = isB;
+        }
+    }
 }
