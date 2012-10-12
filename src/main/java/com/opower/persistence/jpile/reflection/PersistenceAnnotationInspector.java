@@ -1,9 +1,5 @@
 package com.opower.persistence.jpile.reflection;
 
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -33,6 +29,9 @@ import static com.google.common.collect.Lists.newArrayList;
  * @since 1.0
  */
 public class PersistenceAnnotationInspector {
+    private static final String SETTER_PREFIX = "set";
+    private static final String GETTER_PREFIX = "get";
+    private static final String IS_PREFIX = "is";
 
     /**
      * Finds the annotation on a class or subclasses.
@@ -158,21 +157,13 @@ public class PersistenceAnnotationInspector {
     }
 
     /**
-     * Gets the property descriptors for a Java Bean.
+     * Check if a class is a boolean type.
      *
-     * @param aClass the class to get the property descriptors of
-     * @return the property descriptors
+     * @param aClass the class to check
+     * @return true if a {@link Boolean} or {@link boolean}
      */
-    private static PropertyDescriptor[] getPropertyDescriptors(Class aClass) {
-        BeanInfo beanInfo;
-        try {
-            beanInfo = Introspector.getBeanInfo(aClass);
-        }
-        catch (IntrospectionException e) {
-            return new PropertyDescriptor[0];
-        }
-
-        return beanInfo.getPropertyDescriptors();
+    private static boolean isBooleanClass(Class aClass) {
+        return Boolean.class.equals(aClass) || boolean.class.equals(aClass);
     }
 
     /**
@@ -185,13 +176,16 @@ public class PersistenceAnnotationInspector {
         Preconditions.checkNotNull(getter, "Cannot find setter from null getter");
         Class aClass = getter.getDeclaringClass();
 
-        for (PropertyDescriptor propertyDescriptor : getPropertyDescriptors(aClass)) {
-            if (getter.equals(propertyDescriptor.getReadMethod())) {
-                return propertyDescriptor.getWriteMethod();
+        String getterPrefix = GETTER_PREFIX;
+
+        if (isBooleanClass(getter.getReturnType())) {
+            if (getter.getName().startsWith(IS_PREFIX)) {
+                getterPrefix = IS_PREFIX;
             }
         }
 
-        return null;
+        String setterName = getter.getName().replaceFirst(getterPrefix, SETTER_PREFIX);
+        return ReflectionUtils.findMethod(aClass, setterName, getter.getReturnType());
     }
 
     /**
@@ -204,13 +198,13 @@ public class PersistenceAnnotationInspector {
         Preconditions.checkNotNull(setter, "Cannot find getter from null setter");
         Class aClass = setter.getDeclaringClass();
 
-        for (PropertyDescriptor propertyDescriptor : getPropertyDescriptors(aClass)) {
-            if (setter.equals(propertyDescriptor.getWriteMethod())) {
-                return propertyDescriptor.getReadMethod();
-            }
-        }
+        Method getter = ReflectionUtils.findMethod(aClass, setter.getName().replaceFirst(SETTER_PREFIX, GETTER_PREFIX));
 
-        return null;
+        if (getter == null && setter.getParameterTypes().length == 1 && isBooleanClass(setter.getParameterTypes()[0])) {
+            // Retry to find the getter since Boolean/boolean getter methods also start with 'is' instead of 'get'.
+            getter = ReflectionUtils.findMethod(aClass, setter.getName().replaceFirst(SETTER_PREFIX, IS_PREFIX));
+        }
+        return getter;
     }
 
     /**
@@ -223,30 +217,25 @@ public class PersistenceAnnotationInspector {
     public Field fieldFromGetter(Method getter) {
         Class aClass = getter.getDeclaringClass();
 
-        for (PropertyDescriptor propertyDescriptor : getPropertyDescriptors(aClass)) {
-            if (getter.equals(propertyDescriptor.getReadMethod())) {
-                String propertyName = propertyDescriptor.getName();
-                Class propertyClass = propertyDescriptor.getPropertyType();
-
-                Field field = ReflectionUtils.findField(aClass, propertyName, propertyClass);
-
-                if (field == null) {
-                    boolean isBoolean = boolean.class.equals(propertyClass) || Boolean.class.equals(propertyClass);
-                    /*
-                     * Boolean/boolean are treated slightly differently, since 'isXyz'/'getXyz' for booleans can have a
-                     * property name of 'xyz' or 'isXyz'.
-                     */
-                    if (!propertyDescriptor.getName().startsWith("is") && isBoolean) {
-                        String modifiedName = "is" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
-                        field = ReflectionUtils.findField(aClass, modifiedName, propertyClass);
-                    }
-                }
-
-                return field;
+        String getterName = getter.getName();
+        String getterPrefix = GETTER_PREFIX;
+        if (isBooleanClass(getter.getReturnType())) {
+            if (getterName.startsWith(IS_PREFIX)) {
+                getterPrefix = IS_PREFIX;
             }
         }
 
-        return null;
+        String getterNameWithoutPrefix = getterName.replaceFirst(getterPrefix, "");
+        String fieldName = Character.toLowerCase(getterNameWithoutPrefix.charAt(0)) + getterNameWithoutPrefix.substring(1);
+        Field field = ReflectionUtils.findField(aClass, fieldName, getter.getReturnType());
+
+        if (field == null && isBooleanClass(getter.getReturnType())) {
+            // Retry to find the field since boolean/Boolean type variables also start with 'is'.
+            fieldName = IS_PREFIX + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
+            field = ReflectionUtils.findField(aClass, fieldName, getter.getReturnType());
+        }
+
+        return field;
     }
 
     /**
