@@ -167,6 +167,33 @@ public class PersistenceAnnotationInspector {
     }
 
     /**
+     * Get the getter prefix for a getter method,
+     *
+     * @param getter the getter method
+     * @return the prefix, either 'is' or 'get'
+     */
+    private static String getGetterPrefix(Method getter) {
+        if (isBooleanClass(getter.getReturnType()) && getter.getName().startsWith(IS_PREFIX)) {
+            return IS_PREFIX;
+        }
+        
+        return GETTER_PREFIX;
+    }
+
+    /**
+     * Check getter preconditions to ensure that method is really a getter.
+     *
+     * @param getter the getter method
+     */
+    private static void checkGetterPreconditions(Method getter) {
+        Preconditions.checkNotNull(getter.getReturnType(), "Getter must have a return type");
+        Preconditions.checkState(getter.getParameterTypes().length == 0, "Getter must not have any parameters");
+        Preconditions.checkState(getter.getName().startsWith(GETTER_PREFIX)
+                || (isBooleanClass(getter.getReturnType()) && getter.getName().startsWith(IS_PREFIX)),
+                "Getter must start with %s or %s if a Boolean/boolean return type", GETTER_PREFIX, IS_PREFIX);
+    }
+
+    /**
      * Finds the setter for a getter by following the JavaBean naming convention, replacing 'is'/'get' with 'set'.
      *
      * @param getter the getter
@@ -174,15 +201,10 @@ public class PersistenceAnnotationInspector {
      */
     public Method setterFromGetter(Method getter) {
         Preconditions.checkNotNull(getter, "Cannot find setter from null getter");
+        checkGetterPreconditions(getter);
+
         Class aClass = getter.getDeclaringClass();
-
-        String getterPrefix = GETTER_PREFIX;
-
-        if (isBooleanClass(getter.getReturnType())) {
-            if (getter.getName().startsWith(IS_PREFIX)) {
-                getterPrefix = IS_PREFIX;
-            }
-        }
+        String getterPrefix = getGetterPrefix(getter);
 
         String setterName = getter.getName().replaceFirst(getterPrefix, SETTER_PREFIX);
         return ReflectionUtils.findMethod(aClass, setterName, getter.getReturnType());
@@ -196,6 +218,10 @@ public class PersistenceAnnotationInspector {
      */
     public Method getterFromSetter(Method setter) {
         Preconditions.checkNotNull(setter, "Cannot find getter from null setter");
+        Preconditions.checkState(void.class.equals(setter.getReturnType()), "Setter cannot have return type");
+        Preconditions.checkState(setter.getParameterTypes().length == 1, "Setter must have just one parameter");
+        Preconditions.checkState(setter.getName().startsWith(SETTER_PREFIX), "Setter must start with %s", SETTER_PREFIX);
+
         Class aClass = setter.getDeclaringClass();
 
         Method getter = ReflectionUtils.findMethod(aClass, setter.getName().replaceFirst(SETTER_PREFIX, GETTER_PREFIX));
@@ -215,15 +241,12 @@ public class PersistenceAnnotationInspector {
      * @return the field or null
      */
     public Field fieldFromGetter(Method getter) {
+        Preconditions.checkNotNull(getter, "Cannot find field from null getter");
+        checkGetterPreconditions(getter);
         Class aClass = getter.getDeclaringClass();
 
         String getterName = getter.getName();
-        String getterPrefix = GETTER_PREFIX;
-        if (isBooleanClass(getter.getReturnType())) {
-            if (getterName.startsWith(IS_PREFIX)) {
-                getterPrefix = IS_PREFIX;
-            }
-        }
+        String getterPrefix = getGetterPrefix(getter);
 
         String getterNameWithoutPrefix = getterName.replaceFirst(getterPrefix, "");
         String fieldName = Character.toLowerCase(getterNameWithoutPrefix.charAt(0)) + getterNameWithoutPrefix.substring(1);
