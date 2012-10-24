@@ -120,7 +120,7 @@ public class PersistenceAnnotationInspectorTest {
     public void testGetterFromSetterWithIsBoolean() throws Exception {
         assertEquals(
                 JavaBeanBoolean.class.getMethod("isB"),
-                annotationInspector.getterFromSetter(JavaBeanBoolean.class.getMethod("setB", boolean.class))
+                annotationInspector.getterFromSetter(JavaBeanBoolean.class.getMethod("setB", Boolean.class))
         );
     }
 
@@ -135,7 +135,7 @@ public class PersistenceAnnotationInspectorTest {
     @Test
     public void testSetterFromGetterWithIsBoolean() throws Exception {
         assertEquals(
-                JavaBeanBoolean.class.getMethod("setB", boolean.class),
+                JavaBeanBoolean.class.getMethod("setB", Boolean.class),
                 annotationInspector.setterFromGetter(JavaBeanBoolean.class.getMethod("isB"))
         );
     }
@@ -161,7 +161,7 @@ public class PersistenceAnnotationInspectorTest {
      */
     private static class JavaBeanBoolean {
         private boolean isA;
-        private boolean isB;
+        private Boolean isB;
 
         public boolean getA() {
             return isA;
@@ -171,11 +171,11 @@ public class PersistenceAnnotationInspectorTest {
             this.isA = isA;
         }
 
-        public boolean isB() {
+        public Boolean isB() {
             return isB;
         }
 
-        public void setB(boolean isB) {
+        public void setB(Boolean isB) {
             this.isB = isB;
         }
     }
