@@ -37,10 +37,10 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
         Customer expected = ObjectFactory.newCustomer();
         hierarchicalInfileObjectLoader.persist(expected);
         hierarchicalInfileObjectLoader.flush();
-        Map<String, Object> customer = simpleJdbcTemplate.queryForMap("select * from customer");
-        Map<String, Object> contact = simpleJdbcTemplate.queryForMap("select * from contact");
-        Map<String, Object> phone = simpleJdbcTemplate.queryForMap("select * from contact_phone");
-        List<Map<String, Object>> products = simpleJdbcTemplate.queryForList("select * from product");
+        Map<String, Object> customer = jdbcTemplate.queryForMap("select * from customer");
+        Map<String, Object> contact = jdbcTemplate.queryForMap("select * from contact");
+        Map<String, Object> phone = jdbcTemplate.queryForMap("select * from contact_phone");
+        List<Map<String, Object>> products = jdbcTemplate.queryForList("select * from product");
 
         assertEquals(simpleDateFormat.format(expected.getLastSeenOn()), simpleDateFormat.format(customer.get("last_seen_on")));
         assertEquals(expected.getId(), customer.get("id"));
@@ -84,7 +84,7 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
         hierarchicalInfileObjectLoader.persist(data);
         hierarchicalInfileObjectLoader.flush();
 
-        Data actual = simpleJdbcTemplate.queryForObject("select * from binary_data", new RowMapper<Data>() {
+        Data actual = jdbcTemplate.queryForObject("select * from binary_data", new RowMapper<Data>() {
             @Override
             public Data mapRow(ResultSet rs, int rowNum) throws SQLException {
                 Data data = new Data();
@@ -129,7 +129,7 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
         hierarchicalInfileObjectLoader.persist(expected);
         hierarchicalInfileObjectLoader.flush();
 
-        Map<String, Object> actual = simpleJdbcTemplate.queryForMap("select * from contact");
+        Map<String, Object> actual = jdbcTemplate.queryForMap("select * from contact");
 
         assertEquals("がㄦ", actual.get("first_name"));
         assertEquals("ががががㄦ", actual.get("last_name"));

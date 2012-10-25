@@ -6,6 +6,9 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.opower.persistence.jpile.infile.c3p0.C3P0JdbcDriverSupport;
+import com.opower.persistence.jpile.infile.mysql.MysqlJdbcDriverSupport;
 import com.opower.persistence.jpile.util.JdbcUtil;
 
 import static com.google.common.collect.ImmutableList.of;

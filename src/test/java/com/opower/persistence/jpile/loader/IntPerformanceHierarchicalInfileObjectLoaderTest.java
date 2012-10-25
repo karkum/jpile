@@ -48,7 +48,7 @@ public class IntPerformanceHierarchicalInfileObjectLoaderTest extends AbstractIn
 
     @After
     public void assertNumberOfCustomer() {
-        assertEquals(CUSTOMER_TO_GENERATE, simpleJdbcTemplate.queryForInt("select count(*) from customer"));
+        assertEquals(CUSTOMER_TO_GENERATE, jdbcTemplate.queryForInt("select count(*) from customer"));
     }
 
     @Test
