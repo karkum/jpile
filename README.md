@@ -43,7 +43,7 @@ The project is still under development. One of the reasons we decided to go open
 
 jPile is very easy to use. If you are using Maven, then add the following dependency:
 
-```
+```xml
 <dependency>
     <groupId>com.opower</groupId>
     <artifactId>jpile</artifactId>
@@ -53,7 +53,7 @@ jPile is very easy to use. If you are using Maven, then add the following depend
 
 The most common use case is to create a new instance of `HierarchicalInfileObjectLoader`. You have to provide a valid database `Connection`. `HierarchicalInfileObjectLoader` doesn't rely on a database pool because it needs to disable foreign key constraints. Using multiple connections would fail because each new connection would have foreign key constraints enabled by default. Below shows how to do this.
 
-```
+```java
 Connection connection = ...;
 HierarchicalInfileObjectLoader hierarchicalInfileObjectLoader = new HierarchicalInfileObjectLoader();
 
