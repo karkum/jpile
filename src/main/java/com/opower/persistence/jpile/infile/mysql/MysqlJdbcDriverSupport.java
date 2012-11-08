@@ -1,7 +1,9 @@
-package com.opower.persistence.jpile.infile;
+package com.opower.persistence.jpile.infile.mysql;
 
 import java.io.InputStream;
 import java.sql.Statement;
+
+import com.opower.persistence.jpile.infile.InfileStatementCallback;
 
 /**
  * To be used when connections are of type {@code com.mysql.jdbc.Statement}

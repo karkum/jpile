@@ -1,4 +1,4 @@
-package com.opower.persistence.jpile.infile;
+package com.opower.persistence.jpile.infile.c3p0;
 
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import com.google.common.base.Throwables;
 import com.mchange.v2.c3p0.C3P0ProxyStatement;
+
+import com.opower.persistence.jpile.infile.InfileStatementCallback;
 
 /**
  * Support for C3P0 driver

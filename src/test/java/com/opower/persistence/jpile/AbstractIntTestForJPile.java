@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.test.context.ContextConfiguration;
@@ -45,14 +46,14 @@ public abstract class AbstractIntTestForJPile {
 
     protected Connection connection;
     protected HierarchicalInfileObjectLoader hierarchicalInfileObjectLoader = new HierarchicalInfileObjectLoader();
-    protected SimpleJdbcTemplate simpleJdbcTemplate;
+    protected JdbcTemplate jdbcTemplate;
 
     @BeforeClass
+    @SuppressWarnings("deprecation")
     public static void createTables() throws Exception {
         Connection connection = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASSWORD);
-        SimpleJdbcTemplate simpleJdbcTemplate = new SimpleJdbcTemplate(new SingleConnectionDataSource(connection, true));
         SimpleJdbcTestUtils.executeSqlScript(
-                simpleJdbcTemplate,
+                new SimpleJdbcTemplate(new SingleConnectionDataSource(connection, true)),
                 new InputStreamResource(AbstractIntTestForJPile.class.getResourceAsStream("/jpile.sql")),
                 false
         );
@@ -63,14 +64,14 @@ public abstract class AbstractIntTestForJPile {
     public void setUp() throws Exception {
         this.connection = DriverManager.getConnection(JDBC_URL, DB_USER, "");
         this.hierarchicalInfileObjectLoader.setConnection(this.connection);
-        this.simpleJdbcTemplate = new SimpleJdbcTemplate(new SingleConnectionDataSource(this.connection, true));
+        this.jdbcTemplate = new JdbcTemplate(new SingleConnectionDataSource(this.connection, true));
     }
 
     @After
     public void tearDown() throws Exception {
         this.hierarchicalInfileObjectLoader.close();
         for (String table : TABLES) {
-            this.simpleJdbcTemplate.update("truncate " + table);
+            this.jdbcTemplate.update("truncate " + table);
         }
         this.connection.close();
     }
@@ -78,9 +79,9 @@ public abstract class AbstractIntTestForJPile {
     @AfterClass
     public static void dropTables() throws Exception {
         Connection connection = DriverManager.getConnection(JDBC_URL, DB_USER, "");
-        SimpleJdbcTemplate simpleJdbcTemplate = new SimpleJdbcTemplate(new SingleConnectionDataSource(connection, true));
+        JdbcTemplate template = new JdbcTemplate(new SingleConnectionDataSource(connection, true));
         for (String table : TABLES) {
-            simpleJdbcTemplate.update("drop table " + table);
+            template.update("drop table " + table);
         }
         connection.close();
     }
