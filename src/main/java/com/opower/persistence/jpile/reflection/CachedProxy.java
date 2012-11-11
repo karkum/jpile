@@ -6,9 +6,9 @@ import java.util.Arrays;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
@@ -72,7 +72,7 @@ public final class CachedProxy {
             @SuppressWarnings("unchecked")
             T cachedInstance = (T) cachedClass.newInstance();
             ((ProxyObject) cachedInstance).setHandler(new MethodHandler() {
-                final Cache<Args, Optional> cache = createCache(impl);
+                final LoadingCache<Args, Optional> cache = createCache(impl);
 
                 /**
                  * Returns the cached value of this method. If the the method returns null then null is returned.
@@ -94,7 +94,7 @@ public final class CachedProxy {
         }
     }
 
-    private static Cache<Args, Optional> createCache(final Object impl) {
+    private static LoadingCache<Args, Optional> createCache(final Object impl) {
         return CacheBuilder.newBuilder()
                            .softValues()
                            .build(new CacheLoader<Args, Optional>() {
