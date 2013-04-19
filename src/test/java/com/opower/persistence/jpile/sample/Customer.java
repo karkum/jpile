@@ -1,7 +1,5 @@
 package com.opower.persistence.jpile.sample;
 
-import java.util.Date;
-import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,6 +10,10 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import java.util.Date;
+import java.util.List;
 
 /**
  * A sample pojo object for testing
@@ -59,6 +61,7 @@ public class Customer {
         this.contact = contact;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "last_seen_on")
     public Date getLastSeenOn() {
         return lastSeenOn;

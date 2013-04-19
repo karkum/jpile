@@ -1,13 +1,5 @@
 package com.opower.persistence.jpile.loader;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 import com.google.common.collect.ImmutableSet;
 import com.opower.persistence.jpile.AbstractIntTestForJPile;
 import com.opower.persistence.jpile.sample.Contact;
@@ -17,6 +9,15 @@ import com.opower.persistence.jpile.sample.ObjectFactory;
 import com.opower.persistence.jpile.sample.Product;
 import org.junit.Test;
 import org.springframework.jdbc.core.RowMapper;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
@@ -33,8 +34,12 @@ import static org.mockito.Mockito.verify;
 public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPile {
     @Test
     public void testSingleCustomer() throws Exception {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        // Note, this SimpleDateFormat does NOT match the DATE_TIME_FORMATTER in the InfileDataBuffer.  The database
+        // being used with this test does not support milliseconds so we cannot assert with that granularity.  Others
+        // using jPile with a later version of MySQL should be able to assert with the granularity of milliseconds.
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Customer expected = ObjectFactory.newCustomer();
+
         hierarchicalInfileObjectLoader.persist(expected);
         hierarchicalInfileObjectLoader.flush();
         Map<String, Object> customer = jdbcTemplate.queryForMap("select * from customer");
@@ -63,7 +68,6 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
             assertEquals(simpleDateFormat.format(expectedProduct.getPurchasedOn()),
                          simpleDateFormat.format(actualMap.get("purchased_on")));
         }
-
     }
 
     @Test

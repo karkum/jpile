@@ -1,5 +1,6 @@
 package com.opower.persistence.jpile.infile;
 
+import java.lang.reflect.Method;
 import java.util.Date;
 
 /**
@@ -43,12 +44,14 @@ public interface InfileRow {
     InfileRow append(String s);
 
     /**
-     * Adds a date to this row before returning said row. Dates should be formatted in the MySQL date format (yyyy-MM-dd).
+     * Adds a date to this row before returning said row. Date fields must be annotated with the @Temporal annotation
+     * to specify the Date's TemporalType.
      *
      * @param d to add
+     * @param method getter method for the Date object
      * @return this row
      */
-    InfileRow append(Date d);
+    InfileRow append(Date d, Method method);
 
     /**
      * Adds a boolean to this row before returning said row.
