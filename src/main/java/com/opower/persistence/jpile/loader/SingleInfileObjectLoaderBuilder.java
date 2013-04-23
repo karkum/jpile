@@ -1,9 +1,10 @@
 package com.opower.persistence.jpile.loader;
 
-import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.util.List;
-import java.util.Map;
+import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
+import com.opower.persistence.jpile.infile.InfileDataBuffer;
+import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
+
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.GeneratedValue;
@@ -13,10 +14,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTable;
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.opower.persistence.jpile.infile.InfileDataBuffer;
-import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
+import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.util.List;
+import java.util.Map;
 
 import static com.google.common.collect.Lists.newArrayList;
 

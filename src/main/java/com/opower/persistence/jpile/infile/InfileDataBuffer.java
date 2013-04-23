@@ -1,7 +1,16 @@
 package com.opower.persistence.jpile.infile;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
+import com.opower.persistence.jpile.reflection.CachedProxy;
+import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
+import javax.persistence.Temporal;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -10,12 +19,6 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 import java.util.Date;
 import java.util.Set;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Preconditions;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 import static com.google.common.collect.ImmutableSet.of;
 
@@ -58,9 +61,13 @@ public class InfileDataBuffer implements InfileRow {
     // See http://dev.mysql.com/doc/refman/5.1/en/load-data.html
     protected static final Set<Byte> BYTES_NEEDING_ESCAPING =
             of((byte) '\0', (byte) '\b', (byte) '\n', (byte) '\r', (byte) '\t', (byte) MYSQL_ESCAPE_CHAR, (byte) 26);
+    private static final String TEMPORAL_TYPE_EXCEPTION =
+            "The Temporal.value should be TemporalType.DATE, TemporalType.TIME, or TemporalType.TIMESTAMP on method [%s]";
 
     // Using Joda time which is thread safe
-    protected static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormat.forPattern("HH:mm:ss");
+    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
 
     // Utilities
     private final CharsetEncoder encoder;
@@ -73,6 +80,9 @@ public class InfileDataBuffer implements InfileRow {
     // Buffers
     private final ByteBuffer infileBuffer;
     private final ByteBuffer rowBuffer;
+
+    private PersistenceAnnotationInspector persistenceAnnotationInspector =
+            CachedProxy.create(new PersistenceAnnotationInspector());
 
     public InfileDataBuffer(Charset charset, int infileBufferSize, int rowBufferSize) {
         Preconditions.checkNotNull(charset, "No charset set for encoding.");
@@ -213,8 +223,24 @@ public class InfileDataBuffer implements InfileRow {
      * {@inheritDoc}
      */
     @Override
-    public final InfileRow append(Date d) {
-        return (d == null) ? this.appendNull() : this.append(DATE_TIME_FORMATTER.print(new DateTime(d.getTime())));
+    public final InfileRow append(Date d, Method method) {
+        Temporal temporal = persistenceAnnotationInspector.findAnnotation(method, Temporal.class);
+        Preconditions.checkNotNull(temporal, "A temporal annotation must be provided on method [%s]", method);
+
+        switch (temporal.value()) {
+            case DATE:
+                return appendDate(d, DATE_FORMATTER);
+            case TIME:
+                return appendDate(d, TIME_FORMATTER);
+            case TIMESTAMP:
+                return appendDate(d, TIMESTAMP_FORMATTER);
+            default:
+                throw new IllegalArgumentException(String.format(TEMPORAL_TYPE_EXCEPTION, method));
+        }
+    }
+
+    private InfileRow appendDate(Date d, DateTimeFormatter dateTimeFormatter) {
+        return (d == null) ? this.appendNull() : this.append(dateTimeFormatter.print(d.getTime()));
     }
 
     /**

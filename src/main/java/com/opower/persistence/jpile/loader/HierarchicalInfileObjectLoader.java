@@ -1,5 +1,20 @@
 package com.opower.persistence.jpile.loader;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
+import com.opower.persistence.jpile.infile.InfileDataBuffer;
+import com.opower.persistence.jpile.reflection.CachedProxy;
+import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
+import com.opower.persistence.jpile.util.JdbcUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.SecondaryTable;
 import java.io.Closeable;
 import java.io.Flushable;
 import java.lang.reflect.InvocationTargetException;
@@ -12,23 +27,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.PrimaryKeyJoinColumn;
-import javax.persistence.SecondaryTable;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.opower.persistence.jpile.infile.InfileDataBuffer;
-import com.opower.persistence.jpile.reflection.CachedProxy;
-import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
-import com.opower.persistence.jpile.util.JdbcUtil;
 
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.collect.ImmutableList.copyOf;

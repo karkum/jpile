@@ -1,12 +1,5 @@
 package com.opower.persistence.jpile.loader;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.opower.persistence.jpile.infile.InfileDataBuffer;
@@ -14,6 +7,14 @@ import com.opower.persistence.jpile.infile.InfileRow;
 import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.collect.Maps.newLinkedHashMap;
@@ -73,7 +74,7 @@ public class SingleInfileObjectLoader<E> extends InfileObjectLoader<E> {
                         object = id;
                     }
                     if (object instanceof Date) {
-                        infileRow.append((Date) object);
+                        infileRow.append((Date) object, m);
                     }
                     else if (object instanceof Boolean) {
                         infileRow.append((Boolean) object);
