@@ -1,0 +1,2 @@
+New in 1.7.2
+    FIXED issue where persisted fields of type java.util.Date were losing or gaining granularity. The javax.persistence.Temporal annotation is required for all persisted fields of type java.util.Date.
