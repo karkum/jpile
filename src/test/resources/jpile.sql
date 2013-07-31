@@ -3,6 +3,7 @@ CREATE TABLE `contact` (
   `customer_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `first_name` varchar(100) NOT NULL DEFAULT '',
   `last_name` varchar(100) NOT NULL DEFAULT '',
+  `type` enum('PRIMARY', 'SECONDARY') NOT NULL,
   PRIMARY KEY (`customer_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -19,6 +20,7 @@ DROP TABLE IF EXISTS `customer`;
 CREATE TABLE `customer` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `last_seen_on` datetime NOT NULL,
+  `type` tinyint NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -31,6 +33,7 @@ CREATE TABLE `product` (
   `title` varchar(100) NOT NULL DEFAULT '',
   `description` varchar(100) NOT NULL DEFAULT '',
   `price` double NOT NULL,
+  `packaging` tinyint NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

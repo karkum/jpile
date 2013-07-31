@@ -2,6 +2,8 @@ package com.opower.persistence.jpile.sample;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -21,12 +23,22 @@ import java.util.Date;
 @Entity
 @Table(name = "product")
 public class Product {
+    /**
+     * The packaging used for the product.
+     */
+    public enum Packaging {
+        SMALL,
+        MEDIUM,
+        LARGE
+    }
+
     private Long id;
     private Customer customer;
     private Date purchasedOn;
     private String title;
     private String description;
     private BigDecimal price;
+    private Packaging packaging;
 
 
     @ManyToOne
@@ -84,5 +96,15 @@ public class Product {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "packaging")
+    public Packaging getPackaging() {
+        return packaging;
+    }
+
+    public void setPackaging(Packaging packaging) {
+        this.packaging = packaging;
     }
 }

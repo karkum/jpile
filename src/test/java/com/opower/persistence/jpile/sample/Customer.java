@@ -23,10 +23,20 @@ import java.util.List;
 @Entity
 @Table
 public class Customer {
+    /**
+     * The type of customer.
+     */
+    public enum Type {
+        RESIDENTIAL,
+        SMALL_BUSINESS
+    }
+
     private Long id;
     private Contact contact;
     private List<Product> products;
     private Date lastSeenOn;
+    private Type type;
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -69,5 +79,14 @@ public class Customer {
 
     public void setLastSeenOn(Date lastSeenOn) {
         this.lastSeenOn = lastSeenOn;
+    }
+
+    @Column(name = "type")
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
     }
 }

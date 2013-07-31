@@ -18,6 +18,7 @@ public final class ObjectFactory {
         Customer customer = new Customer();
         customer.setContact(newContact());
         customer.setLastSeenOn(new Date());
+        customer.setType(Customer.Type.RESIDENTIAL);
         customer.setProducts(ImmutableList.of(newProduct(), newProduct(), newProduct(), newProduct()));
 
         return customer;
@@ -28,6 +29,7 @@ public final class ObjectFactory {
         contact.setFirstName("John");
         contact.setLastName("Smith");
         contact.setPhone("1234445566");
+        contact.setType(Contact.Type.PRIMARY);
 
         return contact;
     }
@@ -38,6 +40,7 @@ public final class ObjectFactory {
         product.setPrice(BigDecimal.valueOf(1.23));
         product.setPurchasedOn(new Date());
         product.setTitle("Title of an awesome product");
+        product.setPackaging(Product.Packaging.MEDIUM);
 
         return product;
     }

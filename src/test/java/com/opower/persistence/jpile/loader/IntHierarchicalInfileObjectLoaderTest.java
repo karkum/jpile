@@ -48,12 +48,14 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
         List<Map<String, Object>> products = jdbcTemplate.queryForList("select * from product");
 
         assertEquals(simpleDateFormat.format(expected.getLastSeenOn()), simpleDateFormat.format(customer.get("last_seen_on")));
+        assertEquals(expected.getType().ordinal(), customer.get("type"));
         assertEquals(expected.getId(), customer.get("id"));
         assertEquals(expected.getId(), contact.get("customer_id"));
         assertEquals(expected.getContact().getFirstName(), contact.get("first_name"));
         assertEquals(expected.getContact().getLastName(), contact.get("last_name"));
         assertEquals(expected.getId(), phone.get("customer_id"));
         assertEquals(expected.getContact().getPhone(), phone.get("phone"));
+        assertEquals(expected.getContact().getType().name(), contact.get("type"));
         assertEquals(expected.getProducts().size(), products.size());
 
 
@@ -67,6 +69,7 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
             assertEquals(expectedProduct.getPrice().doubleValue(), actualMap.get("price"));
             assertEquals(simpleDateFormat.format(expectedProduct.getPurchasedOn()),
                          simpleDateFormat.format(actualMap.get("purchased_on")));
+            assertEquals(expectedProduct.getPackaging().ordinal(), actualMap.get("packaging"));
         }
     }
 

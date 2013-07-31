@@ -20,6 +20,7 @@ The following annotations are supported:
 * @PrimaryKeyJoinColumn
 * @GeneratedValue
 * @Temporal
+* @Enumerated
 
 
 # How does jPile handle ids?
