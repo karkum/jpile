@@ -8,6 +8,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTables;
 import javax.persistence.Table;
+
 import com.opower.persistence.jpile.sample.Contact;
 import com.opower.persistence.jpile.sample.Customer;
 import com.opower.persistence.jpile.sample.Product;
@@ -81,6 +82,45 @@ public class PersistenceAnnotationInspectorTest {
         }
     }
 
+    /** A test interface. */
+    class TestBaseClass {
+        Number getValue() {
+            return null;
+        }
+
+        @OneToOne
+        @PrimaryKeyJoinColumn
+        Number getOtherValue() {
+            return null;
+        }
+    }
+
+    /** A test class. */
+    class TestClass extends TestBaseClass {
+        @Column
+        @Override
+        Integer getValue() {
+            return null;
+        }
+
+        @Override
+        Integer getOtherValue() {
+            return null;
+        }
+    }
+
+    /**
+     * Verify that the actual method that has the {@link Column} annotation is used, and not some other method signature.
+     */
+    @Test
+    public void testMethodsAnnotatedWithInheritance() throws Exception {
+        List<PersistenceAnnotationInspector.AnnotatedMethod<Column>> methods =
+                annotationInspector.annotatedMethodsWith(TestClass.class, Column.class);
+        assertEquals("Number of found methods", 1, methods.size());
+        assertEquals("Found method", TestClass.class.getDeclaredMethod("getValue"), methods.get(0).getMethod());
+        assertNotNull("Column annotation on method", methods.get(0).getMethod().getAnnotation(Column.class));
+    }
+
     @Test
     public void testMethodsWithMultipleAnnotations() {
         List<Method> methods = annotationInspector.methodsAnnotatedWith(
@@ -88,6 +128,19 @@ public class PersistenceAnnotationInspectorTest {
         );
         assertEquals(1, methods.size());
 
+    }
+
+    /**
+     * Verify that only the actual methods that have the annotations are found and not others especially when there is
+     * inheritance and there are multiple methods and using
+     * {@link PersistenceAnnotationInspector#hasAnnotation(java.lang.reflect.Method, Class)} would be true for multiple methods.
+     */
+    @Test
+    public void testMethodsWithMultipleAnnotationsWithInheritance() {
+        List<Method> methods = annotationInspector.methodsAnnotatedWith(
+                TestClass.class, OneToOne.class, PrimaryKeyJoinColumn.class
+        );
+        assertEquals("Number of found methods", 1, methods.size());
     }
 
     @Test
