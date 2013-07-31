@@ -8,6 +8,8 @@ import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -82,6 +84,9 @@ public class SingleInfileObjectLoader<E> extends InfileObjectLoader<E> {
                     else if (object instanceof byte[]) {
                         infileRow.append(encodeHexString((byte[]) object));
                     }
+                    else if (object.getClass().isEnum()) {
+                        infileRow.append(getEnumValueToAppend(m, (Enum <?>) object));
+                    }
                     else {
                         infileRow.append(object);
                     }
@@ -95,6 +100,25 @@ public class SingleInfileObjectLoader<E> extends InfileObjectLoader<E> {
                 entry.getValue().convertToInfileRow(object, infileRow);
             }
         }
+    }
+
+    /**
+     * Get the enum value depending on if the {@code method} specifies the {@link Enumerated} annotation
+     * and if it's an {@link EnumType#STRING} to use the {@link Enum#name()}, otherwise use {@link Enum#ordinal()} as specified
+     * in the {@link Enumerated} documentation.
+     *
+     * @param method the method that returned the {@code enumObject}
+     * @param enumObject the enum object that is being appended
+     * @return the enum value to append
+     */
+    @VisibleForTesting
+    Object getEnumValueToAppend(Method method, Enum<?> enumObject) {
+        Enumerated enumerated = method.getAnnotation(Enumerated.class);
+        if(enumerated != null && enumerated.value() == EnumType.STRING) {
+            return enumObject.name();
+        }
+
+        return enumObject.ordinal();
     }
 
     @Override

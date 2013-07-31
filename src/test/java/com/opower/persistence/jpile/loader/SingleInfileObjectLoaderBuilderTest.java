@@ -14,6 +14,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 
@@ -49,7 +51,7 @@ public class SingleInfileObjectLoaderBuilderTest {
 
     @Test
     public void testBuildingCustomer() throws Exception {
-        assertEquals(ImmutableSet.of("id", "last_seen_on"), objectLoader.getMappings().keySet());
+        assertEquals(ImmutableSet.of("id", "last_seen_on", "type"), objectLoader.getMappings().keySet());
         assertEquals(ImmutableMap.of(), objectLoader.getEmbeds());
         assertEquals(ImmutableList.of(), objectLoader.getWarnings());
         assertTrue(objectLoader.isAutoGenerateId());
@@ -60,7 +62,8 @@ public class SingleInfileObjectLoaderBuilderTest {
         Customer customer = new Customer();
         objectLoader.add(customer);
         assertNotNull(customer.getId());
-        assertEquals("1\t\\N", CharStreams.toString(new InputStreamReader(objectLoader.getInfileDataBuffer().asInputStream())
+        assertEquals("1\t\\N\t\\N",
+                CharStreams.toString(new InputStreamReader(objectLoader.getInfileDataBuffer().asInputStream())
         ));
     }
 
@@ -75,5 +78,91 @@ public class SingleInfileObjectLoaderBuilderTest {
 
         verify(connection).createStatement();
         verify(statement).execute(anyString());
+    }
+
+    /**
+     * An enum used for testing.
+     */
+    private enum TestType {
+        A;
+
+        /**
+         * @return something that is different from {@link #name()} to verify that this method is not used when getting
+         * the value
+         */
+        @Override
+        public String toString() {
+            return "Something that is NOT the same as name()";
+        }
+    }
+
+    /**
+     * Verify that when the method is not annotated with {@link Enumerated}, the {@link Enum#ordinal()} is used.
+     */
+    @Test
+    public void testGetEnumValueToAppendWithNoAnnotation() throws Exception {
+        TestType enumObject = TestType.A;
+
+        /** Test class */
+        class TestClass {
+            public void getEnum() {}
+        }
+
+        assertEquals("Enum value to append", enumObject.ordinal(),
+                objectLoader.getEnumValueToAppend(TestClass.class.getMethod("getEnum"), enumObject));
+    }
+
+    /**
+     * Verify that when the method is annotated with {@link Enumerated} (but no type is specified), the
+     * {@link Enum#ordinal()} is used.
+     */
+    @Test
+    public void testGetEnumValueToAppendWithDefaultOrdinal() throws Exception {
+        TestType enumObject = TestType.A;
+
+        /** Test class */
+        class TestClass {
+            @Enumerated
+            public void getEnum() {}
+        }
+
+        assertEquals("Enum value to append", enumObject.ordinal(),
+                objectLoader.getEnumValueToAppend(TestClass.class.getMethod("getEnum"), enumObject));
+    }
+
+    /**
+     * Verify that when the method is annotated with {@link Enumerated} and {@link EnumType#ORDINAL} is specified, the
+     * {@link Enum#ordinal()} is used.
+     */
+    @Test
+    public void testGetEnumValueToAppendWithExplicitOrdinal() throws Exception {
+        TestType enumObject = TestType.A;
+
+        /** Test class */
+        class TestClass {
+            @Enumerated(EnumType.ORDINAL)
+            public void getEnum() {}
+        }
+
+        assertEquals("Enum value to append", enumObject.ordinal(),
+                objectLoader.getEnumValueToAppend(TestClass.class.getMethod("getEnum"), enumObject));
+    }
+
+    /**
+     * Verify that when the method is annotated with {@link Enumerated} and {@link EnumType#STRING} is specified, the
+     * {@link Enum#name()} is used.
+     */
+    @Test
+    public void testGetEnumValueToAppendWithString() throws Exception {
+        TestType enumObject = TestType.A;
+
+        /** Test class */
+        class TestClass {
+            @Enumerated(EnumType.STRING)
+            public void getEnum() {}
+        }
+
+        assertEquals("Enum value to append", enumObject.name(),
+                objectLoader.getEnumValueToAppend(TestClass.class.getMethod("getEnum"), enumObject));
     }
 }

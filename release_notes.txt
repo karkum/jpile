@@ -1,2 +1,4 @@
+New in 1.7.3
+    FIXED issue where the @Enumerated annotation was not being used and Object.toString() was being used instead of Enum.name(). Before, all enum values were appended with Object.toString(), but with this fix ordinal is used for all cases but when @Enumerated(EnumType.STRING) is specified.
 New in 1.7.2
     FIXED issue where persisted fields of type java.util.Date were losing or gaining granularity. The javax.persistence.Temporal annotation is required for all persisted fields of type java.util.Date.

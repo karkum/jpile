@@ -2,6 +2,8 @@ package com.opower.persistence.jpile.sample;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
@@ -21,11 +23,20 @@ import org.hibernate.annotations.Parameter;
 @Table
 @SecondaryTables(@SecondaryTable(name = "contact_phone", pkJoinColumns = {@PrimaryKeyJoinColumn(name = "customer_id")}))
 public class Contact {
+    /**
+     * The type of contact.
+     */
+    public enum Type {
+        PRIMARY,
+        SECONDARY
+    }
+
     private Long id;
     private Customer customer;
     private String firstName;
     private String lastName;
     private String phone;
+    private Type type;
 
 
     @OneToOne
@@ -75,5 +86,15 @@ public class Contact {
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
+    }
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
     }
 }
