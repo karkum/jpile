@@ -61,7 +61,7 @@ public class PersistenceAnnotationInspector {
     }
 
     /**
-     * Checks to see if an annotation exists on a method
+     * Checks to see if an annotation exists on a method.
      *
      * @param method         the method
      * @param annotationType the annotation to look for
@@ -72,7 +72,7 @@ public class PersistenceAnnotationInspector {
     }
 
     /**
-     * Checks to see if an annotation exists on a class
+     * Checks to see if an annotation exists on a class.
      *
      * @param clazz          the class to look for
      * @param annotationType the annotation class
@@ -83,7 +83,7 @@ public class PersistenceAnnotationInspector {
     }
 
     /**
-     * Gets the table name for the {@link javax.persistence.Table &#064;Table} annotation on a class
+     * Gets the table name for the {@link javax.persistence.Table &#064;Table} annotation on a class.
      *
      * @param aClass the class to look
      * @return the table name, null if it doesn't exist
@@ -100,7 +100,7 @@ public class PersistenceAnnotationInspector {
     }
 
     /**
-     * Checks to see if {@link javax.persistence.Table &#064;Table} exist
+     * Checks to see if {@link javax.persistence.Table &#064;Table} exist.
      *
      * @param aClass the class to search
      * @return true if @Table exists on class
@@ -110,7 +110,7 @@ public class PersistenceAnnotationInspector {
     }
 
     /**
-     * Look for {@link javax.persistence.SecondaryTable &#064;SecondaryTable} annotations and return the name
+     * Look for {@link javax.persistence.SecondaryTable &#064;SecondaryTable} annotations and return the name.
      *
      * @param aClass the class to look for
      * @return the table name or null if it doesn't exist
@@ -146,7 +146,7 @@ public class PersistenceAnnotationInspector {
     }
 
     /**
-     * Looks for {@link javax.persistence.Id &#064;Id} on all methods and returns the getter
+     * Looks for {@link javax.persistence.Id &#064;Id} on all methods and returns the getter.
      *
      * @param aClass the class to look for
      * @return the getter method
@@ -262,7 +262,7 @@ public class PersistenceAnnotationInspector {
     }
 
     /**
-     * Looks for all methods with an annotation and returns the annotation with the method
+     * Looks for all methods with an annotation and returns the annotation with the method.
      *
      * @param aClass     the class
      * @param annotation the annotation class
@@ -272,7 +272,7 @@ public class PersistenceAnnotationInspector {
     public <A extends Annotation> List<AnnotatedMethod<A>> annotatedMethodsWith(Class<?> aClass, Class<A> annotation) {
         List<AnnotatedMethod<A>> methods = newArrayList();
         for (Method m : ReflectionUtils.getAllDeclaredMethods(aClass)) {
-            A a = findAnnotation(m, annotation);
+            A a = m.getAnnotation(annotation);
             if (a != null) {
                 methods.add(new AnnotatedMethod<A>(m, a));
             }
@@ -283,7 +283,7 @@ public class PersistenceAnnotationInspector {
 
 
     /**
-     * Returns all methods that are annotated with multiple annotations
+     * Returns all methods that are annotated with multiple annotations.
      *
      * @param aClass      the class to search
      * @param annotations all annotations
@@ -296,7 +296,7 @@ public class PersistenceAnnotationInspector {
                 for (Class aClass : annotations) {
                     @SuppressWarnings("unchecked")
                     Class<? extends Annotation> a = (Class<? extends Annotation>) aClass;
-                    if (!hasAnnotation(m, a)) {
+                    if (m.getAnnotation(a) == null) {
                         return false;
                     }
                 }
@@ -306,7 +306,7 @@ public class PersistenceAnnotationInspector {
     }
 
     /**
-     * Returns all methods filtered by a predicate
+     * Returns all methods filtered by a predicate.
      *
      * @param aClass    the class to search
      * @param predicate using this predicate to filter
@@ -318,7 +318,7 @@ public class PersistenceAnnotationInspector {
 
 
     /**
-     * A helper method for getting an id from a persist object with annotated @Id
+     * A helper method for getting an id from a persist object with annotated @Id.
      * <p/>
      * The reason is static and takes an instance of self for caching reasons. @Cacheable does not work when calling
      * <code>this.someCachedMethod()</code> so I am passing the object instead which caches everything.
@@ -349,7 +349,7 @@ public class PersistenceAnnotationInspector {
 
     /**
      * Sets the value by find a getter with @Id and the setter that goes with that field. If a setter doesn't exist
-     * then it falls back looking for the field
+     * then it falls back looking for the field.
      * <p/>
      * The reason is static and takes an instance of self for caching reasons. @Cacheable does not work when calling
      * <code>this.someCachedMethod()</code> so I am passing the object instead which caches everything.
@@ -383,7 +383,7 @@ public class PersistenceAnnotationInspector {
     }
 
     /**
-     * For paring annotations and methods
+     * For paring annotations and methods.
      *
      * @param <E> the annotation type
      */
