@@ -90,7 +90,7 @@ public class PersistenceAnnotationInspector {
      */
     public String tableName(Class<?> aClass) {
         Table table = findAnnotation(aClass, Table.class);
-        Preconditions.checkNotNull(table);
+        Preconditions.checkNotNull(table, "@Table annotation not found for class [%s]", aClass);
         if (table.name().isEmpty()) {
             return aClass.getSimpleName().toLowerCase();
         }

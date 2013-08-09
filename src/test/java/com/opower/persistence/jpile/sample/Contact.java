@@ -1,6 +1,7 @@
 package com.opower.persistence.jpile.sample;
 
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -37,6 +38,7 @@ public class Contact {
     private String lastName;
     private String phone;
     private Type type;
+    private Address address;
 
 
     @OneToOne
@@ -96,5 +98,14 @@ public class Contact {
 
     public void setType(Type type) {
         this.type = type;
+    }
+
+    @Embedded
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
     }
 }

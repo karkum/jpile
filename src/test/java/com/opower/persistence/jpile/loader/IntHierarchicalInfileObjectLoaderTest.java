@@ -46,6 +46,7 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
         Map<String, Object> contact = jdbcTemplate.queryForMap("select * from contact");
         Map<String, Object> phone = jdbcTemplate.queryForMap("select * from contact_phone");
         List<Map<String, Object>> products = jdbcTemplate.queryForList("select * from product");
+        Map<String, Object> supplier = jdbcTemplate.queryForMap("select * from supplier");
 
         assertEquals(simpleDateFormat.format(expected.getLastSeenOn()), simpleDateFormat.format(customer.get("last_seen_on")));
         assertEquals(expected.getType().ordinal(), customer.get("type"));
@@ -56,20 +57,30 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
         assertEquals(expected.getId(), phone.get("customer_id"));
         assertEquals(expected.getContact().getPhone(), phone.get("phone"));
         assertEquals(expected.getContact().getType().name(), contact.get("type"));
+        assertEquals(expected.getContact().getAddress().getStreetNumber(), contact.get("street_number"));
+        assertEquals(expected.getContact().getAddress().getStreet(), contact.get("street"));
+        assertEquals(expected.getContact().getAddress().getCity(), contact.get("city"));
+        assertEquals(expected.getContact().getAddress().getState(), contact.get("state"));
+        assertEquals(expected.getContact().getAddress().getZipCode(), contact.get("zip_code"));
         assertEquals(expected.getProducts().size(), products.size());
-
 
         for (int i = 0, productsSize = expected.getProducts().size(); i < productsSize; i++) {
             Product expectedProduct = expected.getProducts().get(i);
             Map<String, Object> actualMap = products.get(i);
             assertEquals(expectedProduct.getId(), actualMap.get("id"));
             assertEquals(expected.getId().intValue(), actualMap.get("customer_id"));
+            assertEquals(expectedProduct.getSupplier().getId().intValue(), actualMap.get("supplier_id"));
             assertEquals(expectedProduct.getTitle(), actualMap.get("title"));
             assertEquals(expectedProduct.getDescription(), actualMap.get("description"));
             assertEquals(expectedProduct.getPrice().doubleValue(), actualMap.get("price"));
             assertEquals(simpleDateFormat.format(expectedProduct.getPurchasedOn()),
                          simpleDateFormat.format(actualMap.get("purchased_on")));
             assertEquals(expectedProduct.getPackaging().ordinal(), actualMap.get("packaging"));
+            assertEquals(expectedProduct.getSupplier().getAddress().getStreetNumber(), supplier.get("street_number"));
+            assertEquals(expectedProduct.getSupplier().getAddress().getStreet(), supplier.get("street"));
+            assertEquals(expectedProduct.getSupplier().getAddress().getCity(), supplier.get("city"));
+            assertEquals(expectedProduct.getSupplier().getAddress().getState(), supplier.get("state"));
+            assertEquals(expectedProduct.getSupplier().getAddress().getZipCode(), supplier.get("zip_code"));
         }
     }
 
