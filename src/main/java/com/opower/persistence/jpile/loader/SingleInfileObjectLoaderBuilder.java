@@ -2,6 +2,7 @@ package com.opower.persistence.jpile.loader;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.opower.persistence.jpile.infile.InfileDataBuffer;
 import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
 
@@ -16,10 +17,8 @@ import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTable;
 import java.lang.reflect.Method;
 import java.sql.Connection;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
-
-import static com.google.common.collect.Lists.newArrayList;
 
 
 /**
@@ -123,6 +122,9 @@ public class SingleInfileObjectLoaderBuilder<E> {
     }
 
 
+    /**
+     * @throws StackOverflowError if there is an infinite loop in the object graph for {@link Embedded} fields
+     */
     private void findAnnotations(SingleInfileObjectLoader<E> objectLoader) {
         // Finds all columns that are annotated with @Column
         for (PersistenceAnnotationInspector.AnnotatedMethod<Column> annotatedMethod
@@ -200,31 +202,63 @@ public class SingleInfileObjectLoaderBuilder<E> {
         StringBuilder builder = new StringBuilder("LOAD DATA LOCAL INFILE 'stream' INTO TABLE ");
         builder.append(tableName).append(" (");
 
-        List<String> updates = newArrayList();
-        List<String> columns = newArrayList();
+        ImmutableList.Builder<String> columnsBuilder = ImmutableList.builder();
+        ImmutableList.Builder<String> setClausesBuilder = ImmutableList.builder();
 
-        // Look for byte[] and update the sql to have unhex function
-        for (Map.Entry<String, Method> entry : objectLoader.getMappings().entrySet()) {
-            Class type = entry.getValue().getReturnType();
-            if (type.isArray() && type.getComponentType() == byte.class) {
-                updates.add(String.format("%1$s=unhex(@hex%1$s)", entry.getKey()));
-                columns.add("@hex" + entry.getKey());
-            }
-            else {
-                columns.add(entry.getKey());
-            }
-        }
+        populateColumns(objectLoader, columnsBuilder, setClausesBuilder);
+
+        Collection<String> setClauses = setClausesBuilder.build();
+        Collection<String> columns = columnsBuilder.build();
 
         Joiner joiner = Joiner.on(",");
         builder.append(joiner.join(columns)).append(") ");
 
         // If we had any hex columns then append here
-        if (!updates.isEmpty()) {
+        if (!setClauses.isEmpty()) {
             builder.append("SET ");
-            builder.append(joiner.join(updates));
+            builder.append(joiner.join(setClauses));
         }
 
         objectLoader.loadInfileSql = builder.toString();
     }
 
+    /**
+     * Find and populate the columns to be inserted. Columns that need to be set are {@code byte[]} fields because they need to
+     * be unhexed which is not done when calling {@link InfileDataBuffer#append(byte[])}.
+     * <br/>
+     * {@link com.opower.persistence.jpile.loader.SingleInfileObjectLoader#getAllColumns()} can not be used since the type
+     * of the column is needed to determine if it needs be unhexed.
+     * <br/>
+     * The {@link ImmutableList.Builder} parameters are modified where the columns are added to them. All the columns,
+     * (including the columns of {@link Embedded} fields) will be added to the parameters.
+     *
+     * @param objectLoader the object loader containing the columns needing to be updated
+     * @param columns the columns builder to append to for columns that are part of the infile sql
+     * @param setClauses the set clauses builder to append to for set clauses that are part of the infile sql
+     * @param <E> the type for the {@link SingleInfileObjectLoader}
+     *
+     * @throws StackOverflowError if there is an infinite loop in
+     * {@link com.opower.persistence.jpile.loader.SingleInfileObjectLoader#getEmbeds()}
+     */
+    private static <E> void populateColumns(SingleInfileObjectLoader<E> objectLoader, ImmutableList.Builder<String> columns,
+            ImmutableList.Builder<String> setClauses) {
+
+        for (Map.Entry<String, Method> entry : objectLoader.getMappings().entrySet()) {
+            String column = entry.getKey();
+
+            Method method = entry.getValue();
+            Class<?> type = method.getReturnType();
+
+            if (type.isArray() && type.getComponentType() == byte.class) {
+                setClauses.add(String.format("%1$s=unhex(@hex%1$s)", column));
+                column = "@hex" + column;
+            }
+
+            columns.add(column);
+        }
+
+        for (SingleInfileObjectLoader<Object> embeddedLoader : objectLoader.getEmbeds().values()) {
+            populateColumns(embeddedLoader, columns, setClauses);
+        }
+    }
 }

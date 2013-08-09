@@ -19,7 +19,9 @@ public final class ObjectFactory {
         customer.setContact(newContact());
         customer.setLastSeenOn(new Date());
         customer.setType(Customer.Type.RESIDENTIAL);
-        customer.setProducts(ImmutableList.of(newProduct(), newProduct(), newProduct(), newProduct()));
+        Supplier supplier = newSupplier();
+        customer.setProducts(ImmutableList.of(newProduct(customer, supplier), newProduct(customer, supplier),
+                newProduct(customer, supplier), newProduct(customer, supplier)));
 
         return customer;
     }
@@ -30,18 +32,40 @@ public final class ObjectFactory {
         contact.setLastName("Smith");
         contact.setPhone("1234445566");
         contact.setType(Contact.Type.PRIMARY);
+        contact.setAddress(newAddress());
 
         return contact;
     }
 
-    public static Product newProduct() {
+    public static Product newProduct(Customer customer, Supplier supplier) {
         Product product = new Product();
+        product.setCustomer(customer);
         product.setDescription("This is a short description about this product");
         product.setPrice(BigDecimal.valueOf(1.23));
         product.setPurchasedOn(new Date());
         product.setTitle("Title of an awesome product");
         product.setPackaging(Product.Packaging.MEDIUM);
+        product.setSupplier(supplier);
 
         return product;
+    }
+
+    public static Supplier newSupplier() {
+        Supplier supplier = new Supplier();
+        supplier.setName("Company Co");
+        supplier.setAddress(newAddress());
+
+        return supplier;
+    }
+
+    public static Address newAddress() {
+        Address address = new Address();
+        address.setStreetNumber("1515");
+        address.setStreet("N Courthouse Rd");
+        address.setCity("Arlington");
+        address.setState("VA");
+        address.setZipCode("22201");
+
+        return address;
     }
 }

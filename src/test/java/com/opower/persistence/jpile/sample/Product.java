@@ -39,6 +39,7 @@ public class Product {
     private String description;
     private BigDecimal price;
     private Packaging packaging;
+    private Supplier supplier;
 
 
     @ManyToOne
@@ -49,6 +50,16 @@ public class Product {
 
     public void setCustomer(Customer customer) {
         this.customer = customer;
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "supplier_id")
+    public Supplier getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(Supplier supplier) {
+        this.supplier = supplier;
     }
 
     @Id
