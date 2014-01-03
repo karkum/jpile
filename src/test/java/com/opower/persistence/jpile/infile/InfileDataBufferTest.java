@@ -23,7 +23,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class InfileDataBufferTest {
     private InfileDataBuffer infileDataBuffer;
-    private static final String TIMESTAMP_STRING = "2000-01-10 08:00:01.000000000";
+    private static final String TIMESTAMP_STRING = "2000-01-10 08:00:01";
     private static final String DATE_STRING = "2000-01-10";
     private static final String TIME_STRING = "08:00:01";
     private static final Date TEST_DATE = new Date(100, 0 , 10, 8 , 0, 1);

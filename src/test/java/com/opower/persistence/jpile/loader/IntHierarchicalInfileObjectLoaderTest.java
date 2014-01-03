@@ -84,6 +84,30 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
         }
     }
 
+    /**
+     * Test that updating rows works. Persists two rows with the same primary key. Asserts that the second persist wins.
+     * @throws Exception
+     */
+    @Test
+    public void testMultipleCustomers() throws Exception {
+        Customer customer1 = ObjectFactory.newCustomer();
+        customer1.setId(1L);
+        customer1.setType(Customer.Type.RESIDENTIAL);
+
+        Customer customer2 = ObjectFactory.newCustomer();
+        customer2.setId(1L);
+        customer2.setType(Customer.Type.SMALL_BUSINESS);
+
+        this.hierarchicalInfileObjectLoader.setUseReplace(true);
+        this.hierarchicalInfileObjectLoader.persist(customer1);
+        this.hierarchicalInfileObjectLoader.persist(customer2);
+
+        this.hierarchicalInfileObjectLoader.flush();
+
+        Map<String, Object> customers = this.jdbcTemplate.queryForMap("select * from customer");
+        assertEquals(Customer.Type.SMALL_BUSINESS.ordinal(), customers.get("type"));
+    }
+
     @Test
     public void testHundredCustomers() {
         for (int i = 0; i < 100; i++) {
@@ -120,7 +144,7 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
     public void testIgnore() {
         hierarchicalInfileObjectLoader.setClassesToIgnore(ImmutableSet.<Class>of(Customer.class));
 
-        Customer customer = new Customer();
+        Customer customer = ObjectFactory.newCustomer();
         hierarchicalInfileObjectLoader.persist(customer);
 
         assertNull(customer.getId());
@@ -131,7 +155,7 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
         HierarchicalInfileObjectLoader.CallBack callBack = mock(HierarchicalInfileObjectLoader.CallBack.class);
         hierarchicalInfileObjectLoader.setEventCallback(callBack);
 
-        Customer customer = new Customer();
+        Customer customer = ObjectFactory.newCustomer();
         hierarchicalInfileObjectLoader.persist(customer);
 
         verify(callBack, times(1)).onBeforeSave(customer);
@@ -140,7 +164,7 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
 
     @Test
     public void testUtf8() {
-        Contact expected = new Contact();
+        Contact expected = ObjectFactory.newContact();
         expected.setFirstName("\u304C\u3126");
         expected.setLastName("ががががㄦ");
 
