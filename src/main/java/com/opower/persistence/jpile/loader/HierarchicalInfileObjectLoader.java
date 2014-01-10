@@ -72,6 +72,7 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
     private Map<Class<?>, Set<Method>> childDependent = newHashMap();
     private Set<Class> classesToIgnore = ImmutableSet.of();
     private Set<String> secondaryClassesToIgnore = ImmutableSet.of();
+    private boolean useReplace = false;
 
 
     /**
@@ -172,6 +173,7 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
                 .withDefaultTableName()
                 .withJdbcConnection(connection)
                 .usingAnnotationInspector(persistenceAnnotationInspector)
+                .useReplace(useReplace)
                 .build();
 
         primaryObjectLoaders.put(aClass, primaryLoader);
@@ -186,6 +188,7 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
                         .usingSecondaryTable(secondaryTable)
                         .withJdbcConnection(connection)
                         .usingAnnotationInspector(persistenceAnnotationInspector)
+                        .useReplace(useReplace)
                         .build();
 
                 secondaryTableObjectLoaders.put(aClass, secondaryLoader);
@@ -317,6 +320,14 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
 
     public void setEventCallback(CallBack eventCallback) {
         this.eventCallback = eventCallback;
+    }
+
+    /**
+     * Toggles the {@code REPLACE} option. Using {@code REPLACE} causes input rows to replace existing rows for rows that have the
+     * same value for a primary key or unique index as an existing row.
+     */
+    public void setUseReplace(boolean useReplace) {
+        this.useReplace = useReplace;
     }
 
     /**

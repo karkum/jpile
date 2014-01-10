@@ -25,8 +25,11 @@ The following annotations are supported:
 
 # How does jPile handle ids?
 
-jPile cannot rely on MySQL `auto_generated` option. Typical database operations save a new row and fetch the last auto generated id.  This is not possible when flushing an infile stream to the database. Instead jPile tries to generate its own auto generated ids for any column defintion that has `@GeneratedValue(strategy = GenerationType.AUTO)`. 
+jPile cannot rely on MySQL `auto_generated` option. Typical database operations save a new row and fetch the last auto generated id.  This is not possible when flushing an infile stream to the database. Instead jPile tries to generate its own auto generated ids for any column definition that has `@GeneratedValue(strategy = GenerationType.AUTO)`.
 
+# Does jPile update entities?
+
+jPile allows the client to configure whether entities are updated when inserting into an existing row with a duplicate primary/unique key. There is a slight decrease in performance when using this feature: persisting entities takes around 30-40% longer. Performance of replacing entities decreases, as the number of rows that need to be updated increases.
 
 # How do I run the tests?
 
@@ -59,7 +62,7 @@ HierarchicalInfileObjectLoader hierarchicalInfileObjectLoader = new Hierarchical
 try {
   hierarchicalInfileObjectLoader.setConnection(connection);
   
-  hierarchicalInfileObjectLoader.persit(myEntity);
+  hierarchicalInfileObjectLoader.persist(myEntity);
   // Add more using persist()
 } finally {
   hierarchicalInfileObjectLoader.close();
@@ -73,9 +76,9 @@ jPile is released on the MIT license which is available in `license.txt` to read
 
 # How was the performance comparison done?
 
-25,000 fake objects were created. Each object has a Customer, Contact (One-to-one) and 4 Producs (One-to-many). All these objects were saved using simple MySQL prepared statements, Hibernate, and jPile. The results were as follows:
+25,000 fake objects were created. Each object has a Customer, Contact (One-to-one) and 4 Products (One-to-many). All these objects were saved using simple MySQL prepared statements, Hibernate, and jPile. The results were as follows:
 
-* Prepared Statments - 60s
+* Prepared Statements - 60s
 * Hibernate - 40s                     
 * jPile - 6s
 

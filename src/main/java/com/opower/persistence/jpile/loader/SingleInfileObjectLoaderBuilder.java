@@ -37,6 +37,7 @@ public class SingleInfileObjectLoaderBuilder<E> {
     private boolean defaultTableName = false;
     private boolean allowNull = false;
     private boolean embedded = false;
+    private boolean useReplace = false;
     private SecondaryTable secondaryTable;
 
 
@@ -78,6 +79,11 @@ public class SingleInfileObjectLoaderBuilder<E> {
 
     public SingleInfileObjectLoaderBuilder<E> doNotAllowNull() {
         this.allowNull = false;
+        return this;
+    }
+
+    public SingleInfileObjectLoaderBuilder<E> useReplace(boolean useReplace) {
+        this.useReplace = useReplace;
         return this;
     }
 
@@ -199,7 +205,9 @@ public class SingleInfileObjectLoaderBuilder<E> {
     }
 
     private void generateLoadInfileSql(SingleInfileObjectLoader<E> objectLoader) {
-        StringBuilder builder = new StringBuilder("LOAD DATA LOCAL INFILE 'stream' INTO TABLE ");
+        StringBuilder builder = new StringBuilder("LOAD DATA LOCAL INFILE 'stream' ");
+        builder.append(this.useReplace ? "REPLACE " : "");
+        builder.append("INTO TABLE ");
         builder.append(tableName).append(" (");
 
         ImmutableList.Builder<String> columnsBuilder = ImmutableList.builder();
