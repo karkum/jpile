@@ -31,7 +31,7 @@ import static com.google.common.collect.ImmutableList.of;
 @ContextConfiguration
 public abstract class AbstractIntTestForJPile {
     private static final String JDBC_URL = "jdbc:mysql://localhost/jpile?useUnicode=true&characterEncoding=utf-8";
-    private static final List<String> TABLES = of("customer", "product", "contact", "contact_phone", "binary_data");
+    private static final List<String> TABLES = of("customer", "product", "contact", "contact_phone", "binary_data", "supplier");
     public static final String DB_USER = "root";
     public static final String DB_PASSWORD = "";
 
