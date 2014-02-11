@@ -7,10 +7,12 @@ import java.util.concurrent.TimeUnit;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.opower.persistence.jpile.AbstractIntTestForJPile;
+import com.opower.persistence.jpile.sample.Address;
 import com.opower.persistence.jpile.sample.Contact;
 import com.opower.persistence.jpile.sample.Customer;
 import com.opower.persistence.jpile.sample.ObjectFactory;
 import com.opower.persistence.jpile.sample.Product;
+import com.opower.persistence.jpile.sample.Supplier;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -29,61 +31,74 @@ import static junit.framework.Assert.assertEquals;
  */
 @IfProfileValue(name = "performance", value = "true")
 public class IntPerformanceHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPile {
-    private static final String CUSTOMER_SQL = "insert into customer (last_seen_on) values (?)";
+    private static final String CUSTOMER_SQL = "insert into customer (last_seen_on, type) values (?, ?)";
+    private static final String SUPPLIER_SQL = "insert supplier (name, street_number, street, city, state, zip_code) " +
+            "values (?, ?, ?, ?, ?, ?)";
     private static final String PRODUCT_SQL
-            = "insert into product (customer_id, purchased_on, title, description, price) values (?, ?, ?, ?, ?)";
-    private static final String CONTACT_SQL = "insert into contact (customer_id, first_name, last_name) values (?, ?, ?)";
+            = "insert into product (customer_id, purchased_on, title, description, price, packaging, supplier_id) " +
+            "values (?, ?, ?, ?, ?, ?, ?)";
+    private static final String CONTACT_SQL = "insert into contact " +
+            "(customer_id, first_name, last_name, street_number, street, city, state, zip_code) " +
+            "values (?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String CONTACT_PHONE_SQL = "insert contact_phone (customer_id, phone) values (?, ?)";
-    private static final int CUSTOMER_TO_GENERATE = 25000;
+    private static final int CUSTOMERS_TO_GENERATE = 25000;
 
-    Customer[] customers;
+    private Customer[] customers;
 
     @Before
     public void generateCustomers() throws Exception {
-        customers = new Customer[CUSTOMER_TO_GENERATE];
-        for (int i = 0; i < customers.length; i++) {
+        customers = new Customer[CUSTOMERS_TO_GENERATE];
+        for (int i = 0; i < CUSTOMERS_TO_GENERATE; i++) {
             customers[i] = ObjectFactory.newCustomer();
         }
     }
 
     @After
     public void assertNumberOfCustomer() {
-        assertEquals(CUSTOMER_TO_GENERATE, jdbcTemplate.queryForInt("select count(*) from customer"));
+        assertEquals(CUSTOMERS_TO_GENERATE, jdbcTemplate.queryForInt("select count(*) from customer"));
     }
 
     @Test
     public void testWithPreparedStatement() throws SQLException {
-        final PreparedStatement customer = connection.prepareStatement(CUSTOMER_SQL);
-        final PreparedStatement product = connection.prepareStatement(PRODUCT_SQL);
-        final PreparedStatement contact = connection.prepareStatement(CONTACT_SQL);
-        final PreparedStatement phone = connection.prepareStatement(CONTACT_PHONE_SQL);
+        final PreparedStatement customerStatement = connection.prepareStatement(CUSTOMER_SQL);
+        final PreparedStatement supplierStatement = connection.prepareStatement(SUPPLIER_SQL);
+        final PreparedStatement productStatement = connection.prepareStatement(PRODUCT_SQL);
+        final PreparedStatement contactStatement = connection.prepareStatement(CONTACT_SQL);
+        final PreparedStatement phoneStatement = connection.prepareStatement(CONTACT_PHONE_SQL);
 
         doWithInTimedBlock(new Runnable() {
             @Override
             public void run() {
                 try {
                     for (long i = 0, customersLength = customers.length; i < customersLength; i++) {
-                        Customer c = customers[((int) i)];
-                        c.setId(i + 1);
+                        // Use this as the autoincrement id for Customers and Suppliers
+                        long id = i + 1;
 
-                        customer.clearParameters();
-                        product.clearParameters();
-                        contact.clearParameters();
-                        phone.clearParameters();
+                        Customer customer = customers[((int) i)];
+                        customer.setId(id);
 
-                        writeCustomer(customer, c);
-                        customer.executeUpdate();
+                        customerStatement.clearParameters();
+                        supplierStatement.clearParameters();
+                        productStatement.clearParameters();
+                        contactStatement.clearParameters();
+                        phoneStatement.clearParameters();
 
-                        for (Product p : c.getProducts()) {
-                            writeProduct(product, c, p);
-                            product.executeUpdate();
+                        writeCustomer(customerStatement, customer);
+                        customerStatement.executeUpdate();
+
+                        for (Product product : customer.getProducts()) {
+                            writeSupplier(supplierStatement, product.getSupplier());
+                            supplierStatement.executeUpdate();
+
+                            writeProduct(productStatement, customer, product, id);
+                            productStatement.executeUpdate();
                         }
 
-                        writeContact(contact, c);
-                        contact.executeUpdate();
+                        writeContact(contactStatement, customer);
+                        contactStatement.executeUpdate();
 
-                        writeContactPhone(phone, c);
-                        phone.executeUpdate();
+                        writeContactPhone(phoneStatement, customer);
+                        phoneStatement.executeUpdate();
                     }
                 }
                 catch (SQLException e) {
@@ -92,11 +107,11 @@ public class IntPerformanceHierarchicalInfileObjectLoaderTest extends AbstractIn
             }
         }, "Prepared Statements");
 
-        customer.close();
-        product.close();
-        contact.close();
-        phone.close();
-
+        customerStatement.close();
+        supplierStatement.close();
+        productStatement.close();
+        contactStatement.close();
+        phoneStatement.close();
     }
 
 
@@ -106,6 +121,7 @@ public class IntPerformanceHierarchicalInfileObjectLoaderTest extends AbstractIn
                                                                  .addAnnotatedClass(Customer.class)
                                                                  .addAnnotatedClass(Contact.class)
                                                                  .addAnnotatedClass(Product.class)
+                                                                 .addAnnotatedClass(Supplier.class)
                                                                  .buildSessionFactory();
 
 
@@ -134,41 +150,63 @@ public class IntPerformanceHierarchicalInfileObjectLoaderTest extends AbstractIn
         }, "jPile");
     }
 
-    private void writeContactPhone(PreparedStatement phone, Customer c) throws SQLException {
-        phone.setLong(1, c.getId());
-        phone.setString(2, c.getContact().getPhone());
+    private static void writeContactPhone(PreparedStatement contactPhoneStatement, Customer customer) throws SQLException {
+        contactPhoneStatement.setLong(1, customer.getId());
+        contactPhoneStatement.setString(2, customer.getContact().getPhone());
     }
 
-    private void writeContact(PreparedStatement contact, Customer c) throws SQLException {
-        contact.setLong(1, c.getId());
-        contact.setString(2, c.getContact().getFirstName());
-        contact.setString(3, c.getContact().getLastName());
+    private static void writeContact(PreparedStatement contactStatement, Customer customer) throws SQLException {
+        Address address = customer.getContact().getAddress();
+
+        contactStatement.setLong(1, customer.getId());
+        contactStatement.setString(2, customer.getContact().getFirstName());
+        contactStatement.setString(3, customer.getContact().getLastName());
+        contactStatement.setString(4, address.getStreetNumber());
+        contactStatement.setString(5, address.getStreet());
+        contactStatement.setString(6, address.getCity());
+        contactStatement.setString(7, address.getState());
+        contactStatement.setString(8, address.getZipCode());
     }
 
-    private void writeProduct(PreparedStatement product, Customer c, Product p) throws SQLException {
-        product.setLong(1, c.getId());
-        product.setDate(2, new Date(p.getPurchasedOn().getTime()));
-        product.setString(3, p.getTitle());
-        product.setString(4, p.getDescription());
-        product.setBigDecimal(5, p.getPrice());
+    private static void writeProduct(PreparedStatement productStatement, Customer customer, Product product, long supplierId)
+            throws SQLException {
+        productStatement.setLong(1, customer.getId());
+        productStatement.setDate(2, new Date(product.getPurchasedOn().getTime()));
+        productStatement.setString(3, product.getTitle());
+        productStatement.setString(4, product.getDescription());
+        productStatement.setBigDecimal(5, product.getPrice());
+        productStatement.setObject(6, product.getPackaging().ordinal());
+        productStatement.setLong(7, supplierId);
     }
 
-    private void writeCustomer(PreparedStatement customer, Customer c) throws SQLException {
-        customer.setDate(1, new Date(c.getLastSeenOn().getTime()));
+    private static void writeCustomer(PreparedStatement customerStatement, Customer customer) throws SQLException {
+        customerStatement.setDate(1, new Date(customer.getLastSeenOn().getTime()));
+        customerStatement.setObject(2, customer.getType().ordinal());
     }
 
-    private void doWithInTimedBlock(Runnable runnable, String name) {
+    private static void writeSupplier(PreparedStatement supplierStatement, Supplier supplier) throws SQLException {
+        Address address = supplier.getAddress();
+
+        supplierStatement.setString(1, supplier.getName());
+        supplierStatement.setString(2, address.getStreetNumber());
+        supplierStatement.setString(3, address.getStreet());
+        supplierStatement.setString(4, address.getCity());
+        supplierStatement.setString(5, address.getState());
+        supplierStatement.setString(6, address.getZipCode());
+    }
+
+    private static void doWithInTimedBlock(Runnable runnable, String name) {
         long start = System.nanoTime();
         runnable.run();
         long elapsed = System.nanoTime() - start;
         System.out.println(Strings.repeat("=", 100));
         System.out.printf("Total time to save %d customers was %d seconds with %s.%n",
-                          CUSTOMER_TO_GENERATE,
-                          TimeUnit.NANOSECONDS.toSeconds(elapsed),
-                          name);
+                CUSTOMERS_TO_GENERATE,
+                TimeUnit.NANOSECONDS.toSeconds(elapsed),
+                name);
         System.out.printf("Throughput for %s was %d objects/second%n",
-                          name,
-                          CUSTOMER_TO_GENERATE / TimeUnit.NANOSECONDS.toSeconds(elapsed));
+                name,
+                CUSTOMERS_TO_GENERATE / TimeUnit.NANOSECONDS.toSeconds(elapsed));
         System.out.println(Strings.repeat("=", 100));
         System.out.println();
     }
