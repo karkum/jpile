@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>7</version>
+        <groupId>com.opower</groupId>
+        <artifactId>opower-parent</artifactId>
+        <version>2.0.0</version>
     </parent>
 
     <name>jPile - Java Persistence Infile LoadEr</name>
@@ -21,7 +21,7 @@
     <licenses>
         <license>
             <name>The MIT License</name>
-            <url>http://maven.apache.org/guides/mini/guide-central-repository-upload.html</url>
+            <url>http://opensource.org/licenses/MIT</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -29,7 +29,6 @@
     <properties>
         <spring-version>3.1.2.RELEASE</spring-version>
         <slf4j-version>1.7.2</slf4j-version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
 
@@ -61,20 +60,10 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.12.3</version>
                 <configuration>
                     <systemPropertyVariables>
-                        <!-- This is for maven2 -->
+                        <!-- compile with -Dperformance=true to run IntPerformanceHierarchicalInfileObjectLoaderTest -->
                         <propertyName>performance</propertyName>
                         <buildDirectory>${performance}</buildDirectory>
                     </systemPropertyVariables>
@@ -83,7 +72,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>2.8</version>
                 <configuration>
                     <configLocation>checkstyle.xml</configLocation>
                     <failsOnError>true</failsOnError>
@@ -102,36 +90,6 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>release-sign-artifacts</id>
-            <activation>
-                <property>
-                    <name>performRelease</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.1</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
     <dependencies>
         <!-- For AnnotationUtils -->

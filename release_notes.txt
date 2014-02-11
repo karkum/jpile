@@ -1,3 +1,6 @@
+New in 1.7.5
+    Moves under the opower-parent umbrella of open source projects
+
 New in 1.7.4
     Allow input rows to replace existing rows for rows that have the same value for a primary key or unique index as an existing row.
 
@@ -5,5 +8,6 @@ New in 1.7.3
     FIXED issue where the @Enumerated annotation was not being used and Object.toString() was being used instead of Enum.name(). Before, all enum values were appended with Object.toString(), but with this fix ordinal is used for all cases but when @Enumerated(EnumType.STRING) is specified.
     FIXED issue with finding methods that are annotated with @Column. Now if a parent class has the same method name but different return type, it will not incorrectly include that as a method that has an @Column annotation.
     FIXED issue with not including the columns of @Embedded fields.
+
 New in 1.7.2
     FIXED issue where persisted fields of type java.util.Date were losing or gaining granularity. The javax.persistence.Temporal annotation is required for all persisted fields of type java.util.Date.
