@@ -1,5 +1,6 @@
 package com.opower.persistence.jpile.sample;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -52,7 +53,7 @@ public class Product {
         this.customer = customer;
     }
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "supplier_id")
     public Supplier getSupplier() {
         return supplier;
