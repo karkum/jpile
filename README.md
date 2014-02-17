@@ -49,7 +49,7 @@ jPile is very easy to use. If you are using Maven, then add the following depend
 <dependency>
     <groupId>com.opower</groupId>
     <artifactId>jpile</artifactId>
-    <version>1.7.4</version>
+    <version>1.7.5</version>
 </dependency>
 ```
 
@@ -76,7 +76,7 @@ jPile is released on the MIT license which is available in `license.txt` to read
 
 # How was the performance comparison done?
 
-25,000 fake objects were created. Each object has a Customer, Contact (One-to-one) and 4 Products (One-to-many). All these objects were saved using simple MySQL prepared statements, Hibernate, and jPile. The results were as follows:
+25,000 fake objects were created. Each object has a Customer, Contact (One-to-one) and 4 Products (One-to-many) which have a Supplier (Many-to-one). All these objects were saved using simple MySQL prepared statements, Hibernate, and jPile. The results were as follows:
 
 * Prepared Statements - 60s
 * Hibernate - 40s                     
