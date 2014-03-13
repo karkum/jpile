@@ -30,87 +30,108 @@ public class InfileDataBufferTest {
 
     @Before
     public void setUp() {
-        infileDataBuffer = new InfileDataBuffer();
+        this.infileDataBuffer = new InfileDataBuffer();
     }
 
     @Test
     public void testAppendString() {
         String contents = "Gladiator is the best movie ever!";
-        infileDataBuffer.append(contents);
+        this.infileDataBuffer.append(contents);
         addRowAndAssertContents(contents);
     }
 
     @Test
     public void testAppendStringNeedingEscaping() {
         String contents = "C:\\windows\\bluescreen.png";
-        infileDataBuffer.append(contents);
+        this.infileDataBuffer.append(contents);
         addRowAndAssertContents(contents.replace("\\", "\\\\"));
     }
 
     @Test
     public void testAppendByte() {
-        infileDataBuffer.append((byte) 65);
+        this.infileDataBuffer.append((byte) 65);
         addRowAndAssertContents("A");
     }
 
     @Test
     public void testAppendByteNeedingEscaping() {
-        infileDataBuffer.append((byte) 92);
+        this.infileDataBuffer.append((byte) 92);
         addRowAndAssertContents("\\\\");
     }
 
     @Test
     public void testAppendBytes() {
         byte[] bytes = {72, 101, 108, 108, 111, 33};
-        infileDataBuffer.append(bytes);
+        this.infileDataBuffer.append(bytes);
         addRowAndAssertContents("Hello!");
     }
 
     @Test
     public void testAppendBytesNeedingEscaping() {
         byte[] bytes = {67, 58, 92};
-        infileDataBuffer.append(bytes);
+        this.infileDataBuffer.append(bytes);
         addRowAndAssertContents("C:\\\\");
+    }
+
+    /**
+     * Attempt to insert a row of empty data in between two rows of good data. We should not
+     * have a row in the infile buffer for the empty row in the middle.
+     */
+    @Test
+    public void testAppendWithEmptyRowBuffer() {
+        String contents1 = "GO SKINS";
+        String contents2 = "GO WIZ";
+
+        this.infileDataBuffer.append(contents1);
+        this.infileDataBuffer.addRowToInfile();
+
+        this.infileDataBuffer.newRow();
+        this.infileDataBuffer.append("");
+        this.infileDataBuffer.addRowToInfile();
+
+        this.infileDataBuffer.newRow();
+        this.infileDataBuffer.append(contents2);
+        addRowAndAssertContents(contents1 + "\n" + contents2);
     }
 
     @Test
     public void testAppendNull() throws Exception {
-        infileDataBuffer.appendNull();
+        this.infileDataBuffer.appendNull();
         addRowAndAssertContents("\\N");
     }
 
     @Test(expected = NullPointerException.class)
     public void testTemporalAnnotationTestClass() throws NoSuchMethodException {
-        infileDataBuffer.append(TEST_DATE, TemporalAnnotationTestClass.class.getMethod("getDate", null));
+        this.infileDataBuffer.append(TEST_DATE, TemporalAnnotationTestClass.class.getMethod("getDate", null));
     }
 
     @Test
     public void testTemporalDateAnnotation() throws NoSuchMethodException {
-        infileDataBuffer.append(TEST_DATE, TemporalAnnotationTestClass.class.getMethod("getDateWithTemporal", null));
+        this.infileDataBuffer.append(TEST_DATE, TemporalAnnotationTestClass.class.getMethod("getDateWithTemporal", null));
         addRowAndAssertContents(DATE_STRING);
     }
 
     @Test
     public void testTemporalTimeAnnotation() throws NoSuchMethodException {
-        infileDataBuffer.append(TEST_DATE, TemporalAnnotationTestClass.class.getMethod("getTimeWithTemporal", null));
+        this.infileDataBuffer.append(TEST_DATE, TemporalAnnotationTestClass.class.getMethod("getTimeWithTemporal", null));
         addRowAndAssertContents(TIME_STRING);
     }
 
     @Test
     public void testTemporalTimestampAnnotation() throws NoSuchMethodException {
-        infileDataBuffer.append(TEST_DATE, TemporalAnnotationTestClass.class.getMethod("getTimestampWithTemporal", null));
+        this.infileDataBuffer.append(TEST_DATE, TemporalAnnotationTestClass.class.getMethod("getTimestampWithTemporal", null));
         addRowAndAssertContents(TIMESTAMP_STRING);
     }
 
     @Test
     public void testNullDateWithTemporal() throws NoSuchMethodException {
-        infileDataBuffer.append(null, TemporalAnnotationTestClass.class.getMethod("getTimestampWithTemporal", null));
+        this.infileDataBuffer.append(null, TemporalAnnotationTestClass.class.getMethod("getTimestampWithTemporal", null));
         addRowAndAssertContents("\\N");
     }
 
     private void addRowAndAssertContents(String expected) {
         try {
-            infileDataBuffer.addRowToInfile();
+            this.infileDataBuffer.addRowToInfile();
             assertEquals(expected, CharStreams.toString(new InputStreamReader(infileDataBuffer.asInputStream())));
         }
         catch (IOException ex) {
