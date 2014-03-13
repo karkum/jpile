@@ -122,12 +122,24 @@ public class InfileDataBuffer implements InfileRow {
         if (this.infileBuffer.remaining() < (this.rowBuffer.position() + (addNewline ? this.newlineBytes.length : 0))) {
             return false;
         }
+
+        this.rowBuffer.flip();
+        if (isRowBufferEmpty()) {
+            return true;
+        }
+
         if (addNewline) {
             this.infileBuffer.put(this.newlineBytes);
         }
-        this.rowBuffer.flip();
         this.infileBuffer.put(this.rowBuffer);
         return true;
+    }
+
+    /**
+     * @return true if the rowBuffer is empty.
+     */
+    private boolean isRowBufferEmpty() {
+        return this.rowBuffer.position() == this.rowBuffer.limit();
     }
 
     /**
