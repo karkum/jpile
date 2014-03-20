@@ -1,3 +1,9 @@
+New in 1.7.7
+    FIXED issue where the InfileDataBuffer would process rows with an empty buffer
+
+New in 1.7.6
+    Release skipped.
+
 New in 1.7.5
     Moves under the opower-parent umbrella of open source projects
 
