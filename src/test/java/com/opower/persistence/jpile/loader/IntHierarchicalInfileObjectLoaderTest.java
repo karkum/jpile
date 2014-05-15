@@ -40,13 +40,13 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Customer expected = ObjectFactory.newCustomer();
 
-        hierarchicalInfileObjectLoader.persist(expected);
-        hierarchicalInfileObjectLoader.flush();
-        Map<String, Object> customer = jdbcTemplate.queryForMap("select * from customer");
-        Map<String, Object> contact = jdbcTemplate.queryForMap("select * from contact");
-        Map<String, Object> phone = jdbcTemplate.queryForMap("select * from contact_phone");
-        List<Map<String, Object>> products = jdbcTemplate.queryForList("select * from product");
-        Map<String, Object> supplier = jdbcTemplate.queryForMap("select * from supplier");
+        this.hierarchicalInfileObjectLoader.persist(expected);
+        this.hierarchicalInfileObjectLoader.flush();
+        Map<String, Object> customer = this.jdbcTemplate.queryForMap("select * from customer");
+        Map<String, Object> contact = this.jdbcTemplate.queryForMap("select * from contact");
+        Map<String, Object> phone = this.jdbcTemplate.queryForMap("select * from contact_phone");
+        List<Map<String, Object>> products = this.jdbcTemplate.queryForList("select * from product");
+        Map<String, Object> supplier = this.jdbcTemplate.queryForMap("select * from supplier");
 
         assertEquals(simpleDateFormat.format(expected.getLastSeenOn()), simpleDateFormat.format(customer.get("last_seen_on")));
         assertEquals(expected.getType().ordinal(), customer.get("type"));
@@ -111,7 +111,7 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
     @Test
     public void testHundredCustomers() {
         for (int i = 0; i < 100; i++) {
-            hierarchicalInfileObjectLoader.persist(ObjectFactory.newCustomer());
+            this.hierarchicalInfileObjectLoader.persist(ObjectFactory.newCustomer());
         }
     }
 
@@ -123,10 +123,10 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
         data.setName(string);
         data.setMd5(md5);
 
-        hierarchicalInfileObjectLoader.persist(data);
-        hierarchicalInfileObjectLoader.flush();
+        this.hierarchicalInfileObjectLoader.persist(data);
+        this.hierarchicalInfileObjectLoader.flush();
 
-        Data actual = jdbcTemplate.queryForObject("select * from binary_data", new RowMapper<Data>() {
+        Data actual = this.jdbcTemplate.queryForObject("select * from binary_data", new RowMapper<Data>() {
             @Override
             public Data mapRow(ResultSet rs, int rowNum) throws SQLException {
                 Data data = new Data();
@@ -142,10 +142,10 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
 
     @Test
     public void testIgnore() {
-        hierarchicalInfileObjectLoader.setClassesToIgnore(ImmutableSet.<Class>of(Customer.class));
+        this.hierarchicalInfileObjectLoader.setClassesToIgnore(ImmutableSet.<Class>of(Customer.class));
 
         Customer customer = ObjectFactory.newCustomer();
-        hierarchicalInfileObjectLoader.persist(customer);
+        this.hierarchicalInfileObjectLoader.persist(customer);
 
         assertNull(customer.getId());
     }
@@ -153,10 +153,10 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
     @Test
     public void testEventCallback() {
         HierarchicalInfileObjectLoader.CallBack callBack = mock(HierarchicalInfileObjectLoader.CallBack.class);
-        hierarchicalInfileObjectLoader.setEventCallback(callBack);
+        this.hierarchicalInfileObjectLoader.setEventCallback(callBack);
 
         Customer customer = ObjectFactory.newCustomer();
-        hierarchicalInfileObjectLoader.persist(customer);
+        this.hierarchicalInfileObjectLoader.persist(customer);
 
         verify(callBack, times(1)).onBeforeSave(customer);
         verify(callBack, times(1)).onAfterSave(customer);
@@ -168,13 +168,31 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
         expected.setFirstName("\u304C\u3126");
         expected.setLastName("ががががㄦ");
 
-        hierarchicalInfileObjectLoader.persist(expected);
-        hierarchicalInfileObjectLoader.flush();
+        this.hierarchicalInfileObjectLoader.persist(expected);
+        this.hierarchicalInfileObjectLoader.flush();
 
-        Map<String, Object> actual = jdbcTemplate.queryForMap("select * from contact");
+        Map<String, Object> actual = this.jdbcTemplate.queryForMap("select * from contact");
 
         assertEquals("がㄦ", actual.get("first_name"));
         assertEquals("ががががㄦ", actual.get("last_name"));
+    }
+
+    /**
+     * Verify that all of the special characters in the {@link com.opower.persistence.jpile.infile.InfileDataBuffer} are
+     * correctly escaped and stored.
+     */
+    @Test
+    public void testAppendStringEscapesSpecialCharacters() {
+        Contact expected = ObjectFactory.newContact();
+        expected.setFirstName("D\ba\nv\ri\td\0D\\D\u001A");
+
+        this.hierarchicalInfileObjectLoader.setUseReplace(true);
+        this.hierarchicalInfileObjectLoader.persist(expected);
+        this.hierarchicalInfileObjectLoader.flush();
+
+        Map<String, Object> actual = this.jdbcTemplate.queryForMap("select * from contact");
+
+        assertEquals("D\ba\nv\ri\td\0D\\D\u001A", actual.get("first_name"));
     }
 
     private byte[] toMd5(String s) throws NoSuchAlgorithmException {

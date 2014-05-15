@@ -1,3 +1,6 @@
+New in 1.7.8
+    FIXED issue where the InfileDataBuffer would not escape all necessary characters in append(String)
+
 New in 1.7.7
     FIXED issue where the InfileDataBuffer would process rows with an empty buffer
 

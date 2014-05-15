@@ -19,6 +19,7 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 import java.util.Date;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import static com.google.common.collect.ImmutableSet.of;
 
@@ -55,14 +56,14 @@ public class InfileDataBuffer implements InfileRow {
     // Infile constants
     protected static final char MYSQL_ESCAPE_CHAR = '\\';
     protected static final String MYSQL_NULL_STRING = MYSQL_ESCAPE_CHAR + "N";
-    protected static final String MYSQL_ESCAPED_STRING = String.valueOf(MYSQL_ESCAPE_CHAR);
-    protected static final String ESCAPED_MYSQL_ESCAPE_STRING = MYSQL_ESCAPED_STRING + MYSQL_ESCAPED_STRING;
     // List of bytes that will need escaping as they hold special meaning to MYSQL
     // See http://dev.mysql.com/doc/refman/5.1/en/load-data.html
     protected static final Set<Byte> BYTES_NEEDING_ESCAPING =
             of((byte) '\0', (byte) '\b', (byte) '\n', (byte) '\r', (byte) '\t', (byte) MYSQL_ESCAPE_CHAR, (byte) 26);
     private static final String TEMPORAL_TYPE_EXCEPTION =
             "The Temporal.value should be TemporalType.DATE, TemporalType.TIME, or TemporalType.TIMESTAMP on method [%s]";
+    // This Pattern matches on all of the BYTES_NEEDING_ESCAPING
+    private static final Pattern ESCAPE_PATTERN = Pattern.compile("[\b\n\r\t\f\0\u001A\\\\]");
 
     // Using Joda time which is thread safe
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd");
@@ -113,9 +114,9 @@ public class InfileDataBuffer implements InfileRow {
     /**
      * Attempts to add the current row to the infile buffer. If there is insufficient room for the current row
      * and -- if there is any other data in the buffer -- a newline, then the row is not added and the method returns
-     * <code>false</code>.
+     * {@code false}.
      *
-     * @return <code>true</code> if the current row fits into the infile (and has been added)
+     * @return {@code true} if the current row fits into the infile (and has been added)
      */
     public boolean addRowToInfile() {
         boolean addNewline = this.infileBuffer.position() > 0;
@@ -178,9 +179,6 @@ public class InfileDataBuffer implements InfileRow {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public final InfileRow append(byte b) {
         this.appendTabIfNeeded();
@@ -188,9 +186,6 @@ public class InfileDataBuffer implements InfileRow {
         return this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public final InfileRow append(byte[] bytes) {
         this.appendTabIfNeeded();
@@ -207,18 +202,14 @@ public class InfileDataBuffer implements InfileRow {
         this.rowBuffer.put(b);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public final InfileRow append(String s) {
         if (s == null) {
             return this.appendNull();
         }
         this.appendTabIfNeeded();
-        // MySQL interprets backslashes as an escape character.  We want it to treat a backslash as a backslash so
-        // we escape it.
-        String escapedStr = s.replace(MYSQL_ESCAPED_STRING, ESCAPED_MYSQL_ESCAPE_STRING);
+        String escapedStr = ESCAPE_PATTERN.matcher(s).replaceAll("\\\\$0");
+
         CoderResult result = this.encoder.encode(CharBuffer.wrap(escapedStr), this.rowBuffer, false);
         if (!result.isUnderflow()) {
             try {
@@ -231,12 +222,9 @@ public class InfileDataBuffer implements InfileRow {
         return this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public final InfileRow append(Date d, Method method) {
-        Temporal temporal = persistenceAnnotationInspector.findAnnotation(method, Temporal.class);
+        Temporal temporal = this.persistenceAnnotationInspector.findAnnotation(method, Temporal.class);
         Preconditions.checkNotNull(temporal, "A temporal annotation must be provided on method [%s]", method);
 
         switch (temporal.value()) {
@@ -255,25 +243,16 @@ public class InfileDataBuffer implements InfileRow {
         return (d == null) ? this.appendNull() : this.append(dateTimeFormatter.print(d.getTime()));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public final InfileRow append(Boolean b) {
         return (b == null) ? this.appendNull() : this.append(b ? 1 : 0);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public final InfileRow append(Object o) {
         return (o == null) ? this.appendNull() : this.append(o.toString());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public final InfileRow appendNull() {
         this.appendTabIfNeeded();
@@ -281,9 +260,6 @@ public class InfileDataBuffer implements InfileRow {
         return this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public final InfileRow appendEscaped(String s) {
         return append(s.replace('\t', ','));
