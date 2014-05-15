@@ -218,7 +218,9 @@ public class InfileDataBuffer implements InfileRow {
         this.appendTabIfNeeded();
         // MySQL interprets backslashes as an escape character.  We want it to treat a backslash as a backslash so
         // we escape it.
+
         String escapedStr = s.replace(MYSQL_ESCAPED_STRING, ESCAPED_MYSQL_ESCAPE_STRING);
+        //.replace("\r\n", "\\r\\n").replace("\t", "\\t");
         CoderResult result = this.encoder.encode(CharBuffer.wrap(escapedStr), this.rowBuffer, false);
         if (!result.isUnderflow()) {
             try {

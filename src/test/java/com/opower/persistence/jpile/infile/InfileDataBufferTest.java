@@ -35,7 +35,23 @@ public class InfileDataBufferTest {
 
     @Test
     public void testAppendString() {
-        String contents = "Gladiator is the best movie ever!";
+        String contents = "Because I've found that EVERYBODY gets a \"You use _% more power than everyone else in the " +
+                "state\" " +
+                "rating.  Everyone else on my street uses gas, oil, or wood for heat.  I use electric.  " +
+                "\"You used 20% MORE electricity than my neighbors.  This costs you about  $279 EXTRA per year.\"  " +
+                "WOW!  I'm paying $279 EXTRA per year to heat my house at a higher temperature than a comparible neighbor's " +
+                "house who has paid over $1460 (so far) for fuel oil THIS HEATING SEASON!  They're jealous!\r\n" +
+                "\r\n" +
+                "Someone in your advertising department needs to get a clue, because it's making your company look like it's " +
+                "being run by idiots.  I'll reconsider receiving these reports when they are mailed out on softer paper and " +
+                "flushable.   At that point they'll have a valid use.";
+        this.infileDataBuffer.append(contents);
+        addRowAndAssertContents(contents);
+    }
+
+    @Test
+    public void testAppendBadString() {
+        String contents = "Gladiator\tis the best movie ever!\r";
         this.infileDataBuffer.append(contents);
         addRowAndAssertContents(contents);
     }

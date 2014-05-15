@@ -1,6 +1,10 @@
 package com.opower.persistence.jpile.loader;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.Flushable;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.Connection;
 import java.util.Collections;
 import java.util.List;
@@ -77,8 +81,28 @@ public abstract class InfileObjectLoader<E> implements Flushable {
      */
     @Override
     public void flush() {
+        InputStream inputStream = this.infileDataBuffer.asInputStream();
+        inputStream.mark(Integer.MAX_VALUE);
+
+        try {
+            OutputStream streamfile = new FileOutputStream(new File("/Users/karthik.kumar/infilestream.txt"));
+            int read;
+            byte[] bytes = new byte[1024];
+
+            while ((read = inputStream.read(bytes)) != -1) {
+                streamfile.write(bytes, 0, read);
+            }
+            streamfile.flush();
+            streamfile.close();
+
+            inputStream.reset();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
         JdbcUtil.StatementCallback<List<Exception>> statementCallback = new InfileStatementCallback(
-                this.loadInfileSql, this.infileDataBuffer.asInputStream()
+                this.loadInfileSql, inputStream
         );
         this.warnings = JdbcUtil.execute(connection, statementCallback);
         this.infileDataBuffer.clear();

@@ -177,6 +177,23 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
         assertEquals("ががががㄦ", actual.get("last_name"));
     }
 
+    @Test
+    public void testStuff() {
+        Contact expected = ObjectFactory.newContact();
+        expected.setFirstName("hello\t\t\tsomethingelse");
+        expected.setLastName("last\t\t\tname");
+        expected.setPhone("702\t\t\t122");
+
+        hierarchicalInfileObjectLoader.setUseReplace(true);
+        hierarchicalInfileObjectLoader.persist(expected);
+        hierarchicalInfileObjectLoader.flush();
+
+        Map<String, Object> actual = jdbcTemplate.queryForMap("select * from contact");
+
+        assertEquals("がㄦ", actual.get("first_name"));
+        assertEquals("ががががㄦ", actual.get("last_name"));
+    }
+
     private byte[] toMd5(String s) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("MD5");
         md.update(s.getBytes());
