@@ -47,6 +47,32 @@ public class InfileDataBufferTest {
         addRowAndAssertContents(contents.replace("\\", "\\\\"));
     }
 
+    /**
+     * Verify that the {@link InfileDataBuffer#append(String)} method correctly escapes special characters multiple special
+     * characters are present in the input String.
+     */
+    @Test
+    public void testAppendStringNeedEscapingWithMultipleEscapeCharacters() {
+        String input = "D\ba\nv\ri\td\0D\\D\u001A";
+        String expected = "D\\\ba\\\nv\\\ri\\\td\\\0D\\\\D\\\u001A";
+
+        this.infileDataBuffer.append(input);
+        addRowAndAssertContents(expected);
+    }
+
+    /**
+     * Verify that the {@link InfileDataBuffer#append(String)} method correctly escapes special characters special characters
+     * are back to back in the input String.
+     */
+    @Test
+    public void testAppendStringNeedEscapingBackToBackEscapeCharacters() {
+        String input = "Dav\r\nidDD\u001A\u001A";
+        String expected = "Dav\\\r\\\nidDD\\\u001A\\\u001A";
+
+        this.infileDataBuffer.append(input);
+        addRowAndAssertContents(expected);
+    }
+
     @Test
     public void testAppendByte() {
         this.infileDataBuffer.append((byte) 65);
@@ -132,7 +158,7 @@ public class InfileDataBufferTest {
     private void addRowAndAssertContents(String expected) {
         try {
             this.infileDataBuffer.addRowToInfile();
-            assertEquals(expected, CharStreams.toString(new InputStreamReader(infileDataBuffer.asInputStream())));
+            assertEquals(expected, CharStreams.toString(new InputStreamReader(this.infileDataBuffer.asInputStream())));
         }
         catch (IOException ex) {
             throw Throwables.propagate(ex);
@@ -149,7 +175,7 @@ public class InfileDataBufferTest {
 
         @Column(name = "date")
         public Date getDate() {
-            return date;
+            return this.date;
         }
 
         public void setDate(Date date) {
@@ -159,7 +185,7 @@ public class InfileDataBufferTest {
         @Temporal(TemporalType.DATE)
         @Column(name = "date_with_temporal")
         public Date getDateWithTemporal() {
-            return dateWithTemporal;
+            return this.dateWithTemporal;
         }
 
         public void setDateWithTemporal(Date dateWithTemporal) {
@@ -169,7 +195,7 @@ public class InfileDataBufferTest {
         @Temporal(TemporalType.TIME)
         @Column(name = "time_with_temporal")
         public Date getTimeWithTemporal() {
-            return timeWithTemporal;
+            return this.timeWithTemporal;
         }
 
         public void setTimeWithTemporal(Date timeWithTemporal) {
@@ -179,7 +205,7 @@ public class InfileDataBufferTest {
         @Temporal(TemporalType.TIMESTAMP)
         @Column(name = "timestamp_with_temporal")
         public Date getTimestampWithTemporal() {
-            return timestampWithTemporal;
+            return this.timestampWithTemporal;
         }
 
         public void setTimestampWithTemporal(Date timestampWithTemporal) {
