@@ -1,3 +1,6 @@
+New in 1.7.9
+    FIXED issue where always starting the auto-generated id at 0 would cause problems when persisting into a non-empty table
+
 New in 1.7.8
     FIXED issue where the InfileDataBuffer would not escape all necessary characters in append(String)
 
