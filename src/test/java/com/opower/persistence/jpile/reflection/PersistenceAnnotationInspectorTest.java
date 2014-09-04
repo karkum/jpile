@@ -8,6 +8,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTables;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
 
 import com.opower.persistence.jpile.sample.Contact;
 import com.opower.persistence.jpile.sample.Customer;
@@ -124,7 +125,7 @@ public class PersistenceAnnotationInspectorTest {
     @Test
     public void testMethodsWithMultipleAnnotations() {
         List<Method> methods = annotationInspector.methodsAnnotatedWith(
-                Customer.class, OneToOne.class, PrimaryKeyJoinColumn.class
+                Customer.class, Temporal.class, Column.class
         );
         assertEquals(1, methods.size());
 

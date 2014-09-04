@@ -1,6 +1,7 @@
 package com.opower.persistence.jpile.loader;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.opower.persistence.jpile.AbstractIntTestForJPile;
 import com.opower.persistence.jpile.sample.Contact;
 import com.opower.persistence.jpile.sample.Customer;
@@ -52,16 +53,18 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
         assertEquals(expected.getType().ordinal(), customer.get("type"));
         assertEquals(expected.getId(), customer.get("id"));
         assertEquals(expected.getId(), contact.get("customer_id"));
-        assertEquals(expected.getContact().getFirstName(), contact.get("first_name"));
-        assertEquals(expected.getContact().getLastName(), contact.get("last_name"));
+        
+        Contact expectedContact = Iterables.getOnlyElement(expected.getContacts());
+        assertEquals(expectedContact.getContactPK().getFirstName(), contact.get("first_name"));
+        assertEquals(expectedContact.getLastName(), contact.get("last_name"));
         assertEquals(expected.getId(), phone.get("customer_id"));
-        assertEquals(expected.getContact().getPhone(), phone.get("phone"));
-        assertEquals(expected.getContact().getType().name(), contact.get("type"));
-        assertEquals(expected.getContact().getAddress().getStreetNumber(), contact.get("street_number"));
-        assertEquals(expected.getContact().getAddress().getStreet(), contact.get("street"));
-        assertEquals(expected.getContact().getAddress().getCity(), contact.get("city"));
-        assertEquals(expected.getContact().getAddress().getState(), contact.get("state"));
-        assertEquals(expected.getContact().getAddress().getZipCode(), contact.get("zip_code"));
+        assertEquals(expectedContact.getPhone(), phone.get("phone"));
+        assertEquals(expectedContact.getType().name(), contact.get("type"));
+        assertEquals(expectedContact.getAddress().getStreetNumber(), contact.get("street_number"));
+        assertEquals(expectedContact.getAddress().getStreet(), contact.get("street"));
+        assertEquals(expectedContact.getAddress().getCity(), contact.get("city"));
+        assertEquals(expectedContact.getAddress().getState(), contact.get("state"));
+        assertEquals(expectedContact.getAddress().getZipCode(), contact.get("zip_code"));
         assertEquals(expected.getProducts().size(), products.size());
 
         for (int i = 0, productsSize = expected.getProducts().size(); i < productsSize; i++) {
@@ -165,7 +168,7 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
     @Test
     public void testUtf8() {
         Contact expected = ObjectFactory.newContact();
-        expected.setFirstName("\u304C\u3126");
+        expected.getContactPK().setFirstName("\u304C\u3126");
         expected.setLastName("ががががㄦ");
 
         this.hierarchicalInfileObjectLoader.persist(expected);
@@ -184,7 +187,7 @@ public class IntHierarchicalInfileObjectLoaderTest extends AbstractIntTestForJPi
     @Test
     public void testAppendStringEscapesSpecialCharacters() {
         Contact expected = ObjectFactory.newContact();
-        expected.setFirstName("D\ba\nv\ri\td\0D\\D\u001A");
+        expected.getContactPK().setFirstName("D\ba\nv\ri\td\0D\\D\u001A");
 
         this.hierarchicalInfileObjectLoader.setUseReplace(true);
         this.hierarchicalInfileObjectLoader.persist(expected);

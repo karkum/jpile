@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Iterables;
 import com.opower.persistence.jpile.AbstractIntTestForJPile;
 import com.opower.persistence.jpile.sample.Address;
 import com.opower.persistence.jpile.sample.Contact;
@@ -152,15 +153,15 @@ public class IntPerformanceHierarchicalInfileObjectLoaderTest extends AbstractIn
 
     private static void writeContactPhone(PreparedStatement contactPhoneStatement, Customer customer) throws SQLException {
         contactPhoneStatement.setLong(1, customer.getId());
-        contactPhoneStatement.setString(2, customer.getContact().getPhone());
+        contactPhoneStatement.setString(2, Iterables.getOnlyElement(customer.getContacts()).getPhone());
     }
 
     private static void writeContact(PreparedStatement contactStatement, Customer customer) throws SQLException {
-        Address address = customer.getContact().getAddress();
+        Address address = Iterables.getOnlyElement(customer.getContacts()).getAddress();
 
         contactStatement.setLong(1, customer.getId());
-        contactStatement.setString(2, customer.getContact().getFirstName());
-        contactStatement.setString(3, customer.getContact().getLastName());
+        contactStatement.setString(2, Iterables.getOnlyElement(customer.getContacts()).getContactPK().getFirstName());
+        contactStatement.setString(3, Iterables.getOnlyElement(customer.getContacts()).getLastName());
         contactStatement.setString(4, address.getStreetNumber());
         contactStatement.setString(5, address.getStreet());
         contactStatement.setString(6, address.getCity());

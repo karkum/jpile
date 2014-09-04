@@ -9,7 +9,7 @@ CREATE TABLE `contact` (
   `city` varchar(48) NOT NULL,
   `state` char(2) NOT NULL,
   `zip_code` char(5) NOT NULL,
-  PRIMARY KEY (`customer_id`)
+  PRIMARY KEY (`customer_id`, `first_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

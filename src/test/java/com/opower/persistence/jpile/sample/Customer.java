@@ -7,8 +7,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -32,7 +30,7 @@ public class Customer {
     }
 
     private Long id;
-    private Contact contact;
+    private List<Contact> contacts;
     private List<Product> products;
     private Date lastSeenOn;
     private Type type;
@@ -60,15 +58,16 @@ public class Customer {
         this.products = products;
     }
 
-    @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL)
-    @PrimaryKeyJoinColumn
-    public Contact getContact() {
-        return contact;
+    @OneToMany(mappedBy = "contactPK.customer")
+    public List<Contact> getContacts() {
+        return contacts;
     }
 
-    public void setContact(Contact contact) {
-        contact.setCustomer(this);
-        this.contact = contact;
+    public void setContacts(List<Contact> contacts) {
+        for (Contact contact : contacts) {
+            contact.getContactPK().setCustomer(this);
+        }
+        this.contacts = contacts;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
