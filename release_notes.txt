@@ -1,3 +1,6 @@
+New in 1.7.10
+    Added support for persisting entities with @EmbeddedId
+
 New in 1.7.9
     FIXED issue where always starting the auto-generated id at 0 would cause problems when persisting into a non-empty table
 

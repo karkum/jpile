@@ -274,7 +274,7 @@ public class PersistenceAnnotationInspector {
         for (Method m : ReflectionUtils.getAllDeclaredMethods(aClass)) {
             A a = m.getAnnotation(annotation);
             if (a != null) {
-                methods.add(new AnnotatedMethod<A>(m, a));
+                methods.add(new AnnotatedMethod<>(m, a));
             }
         }
 
@@ -285,12 +285,12 @@ public class PersistenceAnnotationInspector {
     /**
      * Returns all methods that are annotated with multiple annotations.
      *
-     * @param aClass      the class to search
+     * @param aClazz      the class to search
      * @param annotations all annotations
      * @return the list of methods
      */
-    public List<Method> methodsAnnotatedWith(Class<?> aClass, final Class... annotations) {
-        return methodsAnnotatedWith(aClass, new Predicate<Method>() {
+    public List<Method> methodsAnnotatedWith(Class<?> aClazz, final Class... annotations) {
+        return methodsAnnotatedWith(aClazz, new Predicate<Method>() {
 
             public boolean apply(Method m) {
                 for (Class aClass : annotations) {
@@ -335,10 +335,7 @@ public class PersistenceAnnotationInspector {
                 try {
                     return getter.invoke(o);
                 }
-                catch (InvocationTargetException e) {
-                    throw Throwables.propagate(e);
-                }
-                catch (IllegalAccessException e) {
+                catch (InvocationTargetException | IllegalAccessException e) {
                     throw Throwables.propagate(e);
                 }
             }
@@ -350,7 +347,7 @@ public class PersistenceAnnotationInspector {
     /**
      * Sets the value by find a getter with @Id and the setter that goes with that field. If a setter doesn't exist
      * then it falls back looking for the field.
-     * <p/>
+     *
      * The reason is static and takes an instance of self for caching reasons. @Cacheable does not work when calling
      * <code>this.someCachedMethod()</code> so I am passing the object instead which caches everything.
      *
@@ -374,10 +371,7 @@ public class PersistenceAnnotationInspector {
                 field.set(entity, id);
             }
         }
-        catch (InvocationTargetException e) {
-            throw Throwables.propagate(e);
-        }
-        catch (IllegalAccessException e) {
+        catch (InvocationTargetException | IllegalAccessException e) {
             throw Throwables.propagate(e);
         }
     }

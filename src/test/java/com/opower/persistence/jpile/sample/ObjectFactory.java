@@ -16,7 +16,7 @@ public final class ObjectFactory {
 
     public static Customer newCustomer() {
         Customer customer = new Customer();
-        customer.setContact(newContact());
+        customer.setContacts(ImmutableList.of(newContact()));
         customer.setLastSeenOn(new Date());
         customer.setType(Customer.Type.RESIDENTIAL);
         Supplier supplier = newSupplier();
@@ -27,8 +27,11 @@ public final class ObjectFactory {
     }
 
     public static Contact newContact() {
+        Contact.ContactPK contactPK = new Contact.ContactPK();
+        contactPK.setFirstName("John");
+
         Contact contact = new Contact();
-        contact.setFirstName("John");
+        contact.setContactPK(contactPK);
         contact.setLastName("Smith");
         contact.setPhone("1234445566");
         contact.setType(Contact.Type.PRIMARY);

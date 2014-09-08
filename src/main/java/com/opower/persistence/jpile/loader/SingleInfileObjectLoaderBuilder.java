@@ -3,12 +3,14 @@ package com.opower.persistence.jpile.loader;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.opower.persistence.jpile.infile.InfileDataBuffer;
 import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
 import com.opower.persistence.jpile.util.JdbcUtil;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;
+import javax.persistence.EmbeddedId;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.JoinColumn;
@@ -16,6 +18,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -23,7 +26,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collection;
 import java.util.Map;
-
 
 /**
  * The builder for creating a SingleInfileObjectLoader. This class does the building and parsing of the annotations.
@@ -155,7 +157,6 @@ public class SingleInfileObjectLoaderBuilder<E> {
             }
         }
 
-
         // Ignore all these when using secondary table
         if (secondaryTable == null) {
             // Finds all one to one columns with @OneToOne
@@ -168,9 +169,10 @@ public class SingleInfileObjectLoaderBuilder<E> {
                     objectLoader.mappings.put(annotatedMethod.getAnnotation().name(), annotatedMethod.getMethod());
                 }
             }
-            // Finds all columns with @Embedded
-            for (PersistenceAnnotationInspector.AnnotatedMethod<Embedded> annotatedMethod
-                    : annotationInspector.annotatedMethodsWith(aClass, Embedded.class)) {
+            // Finds all columns with @Embedded or @EmbeddedId
+            for (PersistenceAnnotationInspector.AnnotatedMethod<? extends Annotation> annotatedMethod
+                    : Iterables.concat(annotationInspector.annotatedMethodsWith(aClass, Embedded.class),
+                            annotationInspector.annotatedMethodsWith(aClass, EmbeddedId.class))) {
                 Method method = annotatedMethod.getMethod();
                 @SuppressWarnings("unchecked")
                 SingleInfileObjectLoader<Object> embededObjectLoader

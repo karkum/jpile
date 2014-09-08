@@ -11,6 +11,7 @@ The following annotations are supported:
 * @SecondaryTable
 * @SecondaryTables
 * @Embedded
+* @EmbeddedId
 * @Id
 * @Column
 * @OneToMany
