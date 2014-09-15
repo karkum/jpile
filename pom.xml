@@ -15,7 +15,7 @@
     </description>
     <groupId>com.opower</groupId>
     <artifactId>jpile</artifactId>
-    <version>1.7.10</version>
+    <version>1.7.11-SNAPSHOT</version>
     <url>https://github.com/opower/jpile</url>
 
     <licenses>
@@ -36,7 +36,7 @@
         <url>git@github.com:opower/jpile.git</url>
         <connection>scm:git:git@github.com:opower/jpile.git</connection>
         <developerConnection>scm:git:git@github.com:opower/jpile.git</developerConnection>
-      <tag>1.7.10</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <developers>
