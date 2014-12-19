@@ -1,15 +1,16 @@
 package com.opower.persistence.jpile.infile;
 
+import com.opower.persistence.jpile.infile.c3p0.C3P0JdbcDriverSupport;
+import com.opower.persistence.jpile.infile.hikari.HikariJdbcDriverSupport;
+import com.opower.persistence.jpile.infile.mysql.MysqlJdbcDriverSupport;
+import com.opower.persistence.jpile.util.JdbcUtil;
+
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.opower.persistence.jpile.infile.c3p0.C3P0JdbcDriverSupport;
-import com.opower.persistence.jpile.infile.mysql.MysqlJdbcDriverSupport;
-import com.opower.persistence.jpile.util.JdbcUtil;
 
 import static com.google.common.collect.ImmutableList.of;
 
@@ -36,7 +37,7 @@ import static com.google.common.collect.ImmutableList.of;
 public class InfileStatementCallback implements JdbcUtil.StatementCallback<List<Exception>> {
 
     private static final List<JdbcDriverSupport> SUPPORTED_DRIVERS =
-            of(new C3P0JdbcDriverSupport(), new MysqlJdbcDriverSupport());
+            of(new HikariJdbcDriverSupport(), new C3P0JdbcDriverSupport(), new MysqlJdbcDriverSupport());
 
     // SQL statement
     private String loadInfileSql;
