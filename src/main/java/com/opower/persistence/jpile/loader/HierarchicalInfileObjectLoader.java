@@ -82,8 +82,17 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
      * @param moreObjects optional more objects
      */
     public void persist(Object firstObject, Object... moreObjects) {
+        persist(concat(of(firstObject), copyOf(moreObjects)));
+    }
+
+    /**
+     * Disables fk (if not already disabled) and saves each object
+     *
+     * @param objects the objects to save
+     */
+    public void persist(Iterable<Object> objects) {
         Preconditions.checkNotNull(connection, "Connection is null, did you call setConnection()?");
-        for (Object o : concat(of(firstObject), copyOf(moreObjects))) {
+        for (Object o : objects) {
             persistWithCyclicCheck(o, new HashSet<Object>());
         }
     }
