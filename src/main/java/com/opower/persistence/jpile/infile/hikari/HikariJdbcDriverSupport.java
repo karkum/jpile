@@ -9,7 +9,7 @@ import java.sql.Statement;
 /**
  * Support for HikariCP's statement proxy.
  *
- * @author aldenquimby@github.com
+ * @author aldenquimby@gmail.com
  * @see <a href="https://github.com/brettwooldridge/HikariCP">HikariCP</a>
  */
 public class HikariJdbcDriverSupport implements InfileStatementCallback.JdbcDriverSupport {
