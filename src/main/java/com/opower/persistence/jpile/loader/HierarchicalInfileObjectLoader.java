@@ -90,7 +90,7 @@ public class HierarchicalInfileObjectLoader implements Flushable, Closeable {
      *
      * @param objects the objects to save
      */
-    public void persist(Iterable<Object> objects) {
+    public void persist(Iterable<?> objects) {
         Preconditions.checkNotNull(connection, "Connection is null, did you call setConnection()?");
         for (Object o : objects) {
             persistWithCyclicCheck(o, new HashSet<Object>());
