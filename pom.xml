@@ -190,5 +190,11 @@
             <version>${slf4j-version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>2.2.5</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
