@@ -1,8 +1,8 @@
 package com.opower.persistence.jpile.infile;
 
-import com.opower.persistence.jpile.infile.c3p0.C3P0JdbcDriverSupport;
-import com.opower.persistence.jpile.infile.hikari.HikariJdbcDriverSupport;
-import com.opower.persistence.jpile.infile.mysql.MysqlJdbcDriverSupport;
+import com.opower.persistence.jpile.infile.driver.C3P0JdbcDriverSupport;
+import com.opower.persistence.jpile.infile.driver.HikariJdbcDriverSupport;
+import com.opower.persistence.jpile.infile.driver.MysqlJdbcDriverSupport;
 import com.opower.persistence.jpile.util.JdbcUtil;
 
 import java.io.InputStream;

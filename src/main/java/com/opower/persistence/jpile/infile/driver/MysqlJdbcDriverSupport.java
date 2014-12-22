@@ -1,4 +1,4 @@
-package com.opower.persistence.jpile.infile.mysql;
+package com.opower.persistence.jpile.infile.driver;
 
 import java.io.InputStream;
 import java.sql.Statement;

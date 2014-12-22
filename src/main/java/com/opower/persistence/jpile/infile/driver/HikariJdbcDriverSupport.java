@@ -1,4 +1,4 @@
-package com.opower.persistence.jpile.infile.hikari;
+package com.opower.persistence.jpile.infile.driver;
 
 import com.opower.persistence.jpile.infile.InfileStatementCallback;
 
