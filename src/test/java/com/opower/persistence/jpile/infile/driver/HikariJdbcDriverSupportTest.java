@@ -47,7 +47,8 @@ public class HikariJdbcDriverSupportTest {
     }
 
     /**
-     * Need a stub here b/c {@link com.zaxxer.hikari.proxy.StatementProxy#delegate} is annoyingly final.
+     * Need a stub here because {@link StatementProxy#unwrap(Class)}
+     * and {@link StatementProxy#delegate} are annoyingly final.
      */
     private class StubHikariStatement extends StatementProxy {
 
