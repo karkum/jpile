@@ -36,6 +36,16 @@ public interface InfileRow {
     InfileRow append(byte[] bytes);
 
     /**
+     * Adds a Float to this row before returning said row. Implementations are responsible for formatting.
+     *
+     * @param number to add
+     * @param precision the maximum number of digits
+     * @param scale the number of digits to the right of the decimal point
+     * @return this row
+     */
+    InfileRow append(Float number, int precision, int scale);
+
+    /**
      * Adds a String to this row before returning said row. Implementations are responsible for handling encoding.
      *
      * @param s to add

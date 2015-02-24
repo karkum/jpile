@@ -17,6 +17,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 
 /**
+ * Test for {@link HikariJdbcDriverSupport}
+ *
  * @author alden@mark43.com
  * @since 12/22/14
  */
@@ -30,17 +32,17 @@ public class HikariJdbcDriverSupportTest {
     private InputStream inputStream;
 
     @Test
-    public void testAccept_hikariStatement_returnsTrue() throws Exception {
+    public void testAcceptHikariStatementReturnsTrue() throws Exception {
         assertTrue(hikariSupport.accept(new StubHikariStatement(null)));
     }
 
     @Test
-    public void testAccept_mysqlStatement_returnsFalse() throws Exception {
+    public void testAcceptMysqlStatementReturnsFalse() throws Exception {
         assertFalse(hikariSupport.accept(mysqlStatement));
     }
 
     @Test
-    public void testDoWithStatement_unwrapsStatement_setsLocalInfileInputStream() throws Exception {
+    public void testDoWithStatementUnwrapsStatementSetsLocalInfileInputStream() throws Exception {
         hikariSupport.doWithStatement(new StubHikariStatement(mysqlStatement), inputStream);
 
         verify(mysqlStatement).setLocalInfileInputStream(inputStream);
