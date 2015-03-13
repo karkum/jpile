@@ -2,6 +2,7 @@ package com.opower.persistence.jpile.infile;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.opower.persistence.jpile.reflection.CachedProxy;
 import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
 import org.joda.time.format.DateTimeFormat;
@@ -17,10 +18,13 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Date;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.ImmutableSet.of;
 
 /**
@@ -193,6 +197,25 @@ public class InfileDataBuffer implements InfileRow {
             appendByte(b);
         }
         return this;
+    }
+
+    @Override
+    public InfileRow append(Float number, int precision, int scale) {
+        checkArgument(scale > 0, "Scale (%s) should be greater than 0", scale);
+        checkArgument(precision > 0, "Precision (%s) should be greater than 0", precision);
+        checkArgument(scale < precision, "Scale (%s) must be no larger than precision (%s)", scale, precision);
+
+        String integer = Strings.repeat("#", precision - scale);
+        String fractional = Strings.repeat("#", scale);
+
+        DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
+        decimalFormatSymbols.setDecimalSeparator('.');
+        DecimalFormat decimalFormat = new DecimalFormat(integer + "." + fractional);
+        decimalFormat.setGroupingUsed(false);
+        decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
+
+        String formatted = decimalFormat.format(number);
+        return append(formatted);
     }
 
     private void appendByte(byte b) {

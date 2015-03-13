@@ -8,6 +8,7 @@ import com.opower.persistence.jpile.reflection.PersistenceAnnotationInspector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.persistence.Column;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import java.lang.reflect.InvocationTargetException;
@@ -86,6 +87,18 @@ public class SingleInfileObjectLoader<E> extends InfileObjectLoader<E> {
                     }
                     else if (object.getClass().isEnum()) {
                         infileRow.append(getEnumValueToAppend(m, (Enum <?>) object));
+                    }
+                    else if (object instanceof Float) {
+                        Column column = this.persistenceAnnotationInspector.findAnnotation(m, Column.class);
+                        if (column != null) {
+                            int precision = column.precision();
+                            int scale = column.scale();
+                            if (precision > 0 && scale > 0) {
+                                infileRow.append((Float) object, precision, scale);
+                                continue;
+                            }
+                        }
+                        infileRow.append(object);
                     }
                     else {
                         infileRow.append(object);

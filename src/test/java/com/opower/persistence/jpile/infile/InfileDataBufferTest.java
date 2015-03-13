@@ -155,6 +155,24 @@ public class InfileDataBufferTest {
         addRowAndAssertContents("\\N");
     }
 
+    @Test
+    public void testFloatWithPrecisionAndScale1() {
+        this.infileDataBuffer.append(84009.469f, 12, 3);
+        addRowAndAssertContents("84009.469");
+    }
+
+    @Test
+    public void testFloatWithPrecisionAndScale2() {
+        this.infileDataBuffer.append(182921.969f, 12, 3);
+        addRowAndAssertContents("182921.969");
+    }
+
+    @Test
+    public void testFloatWithPrecisionAndScale3() {
+        this.infileDataBuffer.append(16725.617f, 12, 3);
+        addRowAndAssertContents("16725.617");
+    }
+
     private void addRowAndAssertContents(String expected) {
         try {
             this.infileDataBuffer.addRowToInfile();
