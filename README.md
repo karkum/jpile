@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/opower/jpile.svg?branch=master)](https://travis-ci.org/opower/jpile)
+
 # What is jPile?
 
 A project developed at Opower that uses `javax.persistence` annotations to load objects in MySQL using its infile stream format. This component is meant for importing large amount of data at a high throughput rate. It supports many of the same features Hibernate supports except with up to _10x_ performance gain. So for example, if your data takes 60 seconds to be imported into a MySQL database, with jPile it would only take 6 seconds! You don't have to change anything on your model objects. jPile will read the persistence annotations automatically at start up.
