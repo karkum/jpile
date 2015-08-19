@@ -161,7 +161,6 @@
 
 
         <module name="EqualsAvoidNull"/>
-        <module name="RedundantThrows"/>
         <module name="WhitespaceAround">
             <property name="tokens" value="STAR,ASSIGN,PLUS,MINUS,EQUAL,GE,GT,LE,LT,NOT_EQUAL"/>
         </module>
