@@ -5,7 +5,11 @@ import com.opower.persistence.jpile.infile.driver.HikariJdbcDriverSupport;
 import com.opower.persistence.jpile.infile.driver.MysqlJdbcDriverSupport;
 import com.opower.persistence.jpile.util.JdbcUtil;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
@@ -44,6 +48,8 @@ public class InfileStatementCallback implements JdbcUtil.StatementCallback<List<
     // Source of data.
     private InputStream inputStream;
 
+    private static int count = 0;
+
     /**
      * Constructs a callback from a SQL statement and a data stream from which to read.
      *
@@ -57,6 +63,13 @@ public class InfileStatementCallback implements JdbcUtil.StatementCallback<List<
 
     @Override
     public List<Exception> doInStatement(Statement statement) throws SQLException {
+        copyInputStreamToFile(this.inputStream, new File("~/jpile_log/" + count++ + ".txt"), this.loadInfileSql);
+        try {
+            this.inputStream.reset();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
         for (JdbcDriverSupport support : SUPPORTED_DRIVERS) {
             if (support.accept(statement)) {
                 support.doWithStatement(statement, this.inputStream);
@@ -67,6 +80,22 @@ public class InfileStatementCallback implements JdbcUtil.StatementCallback<List<
         throw new RuntimeException(String.format("Statement of type [%s] is not supported.", statement.getClass().getName()));
     }
 
+    private void copyInputStreamToFile(InputStream in, File file, String query) {
+        try {
+            OutputStream out = new FileOutputStream(file);
+            out.write(query.getBytes());
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+            out.close();
+            in.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     /**
      * Adds all of the warnings in the chain of a passed warning to a collection.
      *
